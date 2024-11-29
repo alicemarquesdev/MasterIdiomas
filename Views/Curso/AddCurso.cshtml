@@ -1,0 +1,166 @@
+﻿@using MasterIdiomas.Enums
+@model CursoModel
+@{
+    ViewData["Title"] = "Criar Curso";
+    var idiomas = ViewBag.Idiomas as List<string>;
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4 mb-4">Criar Curso</h1>
+
+    @if (TempData["MensagemSucesso"] != null)
+    {
+        <div class="alert alert-primary d-flex align-items-center" role="alert">
+            <div>
+                @TempData["MensagemSucesso"]
+            </div>
+
+            <button type="button" class="btn btn-primary btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
+
+        </div>
+    }
+
+    @if (TempData["MensagemErro"] != null)
+    {
+        <div class="alert alert-danger d-flex align-items-center" role="alert">
+            <div>
+                @TempData["MensagemErro"]
+            </div>
+            <button type="button" class="btn btn-danger btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
+
+        </div>
+    }
+
+    <form asp-controller="Curso" asp-action="AddCurso" method="post">
+
+
+        <div class="mb-3 w-100">
+            <label for="Idioma" class="form-label">Idioma</label>
+            <select class="form-control" asp-for="Idioma">
+                <option value="" selected>Selecione</option>
+                @if (idiomas != null)
+                {
+                    foreach (var idioma in idiomas)
+                    {
+                        <option value="@idioma">@idioma</option>
+                    }
+                }
+                else
+                {
+                    <option value="">Nenhum idioma encontrado.</option>
+                }
+            </select>
+            <span class="text-danger">
+                @Html.ValidationMessageFor(x => x.Idioma)
+            </span>
+        </div>
+
+        <!-- Turno -->
+        <div class="mb-3 ">
+            <label for="Turno" class="form-label">Turno</label>
+            <select class="form-control" asp-for="Turno">
+                <option value="" selected>Selecione</option>
+                <option value="Manhã">Manhã</option>
+                <option value="Tarde">Tarde</option>
+                <option value="Noite">Noite</option>
+            </select>
+            <span class="text-danger">
+                @Html.ValidationMessageFor(x => x.Turno)
+            </span>
+        </div>
+
+        <!-- Nível -->
+        <div class="mb-3 w-100">
+            <label for="Nivel" class="form-label">Nivel</label>
+            <select class="form-control" asp-for="Nivel">
+                <option value="" selected>Selecione</option>
+                <option value="Iniciante">Iniciante</option>
+                <option value="Intermediário">Intermediário</option>
+                <option value="Avançado">Avançado</option>
+            </select>
+            <span class="text-danger">
+                @Html.ValidationMessageFor(x => x.Nivel)
+            </span>
+        </div>
+
+
+
+        <!-- Data de Inicio -->
+        <div class="mb-3">
+            <label for="DataInicio" class="form-label">Data de Início</label>
+            <input type="date" class="form-control" asp-for="DataInicio" min="@DateTime.Now.ToString("yyyy-MM-dd")" max="2025-10-10">
+            <span class="text-danger">
+                @Html.ValidationMessageFor(x => x.DataInicio)
+            </span>
+        </div>
+
+        <!-- Carga Horária -->
+        <div class="mb-3">
+            <label for="CargaHoraria" class="form-label">Carga Horária</label>
+            <input type="number" class="form-control" asp-for="CargaHoraria" placeholder="Horas de curso." min="10" max="50">
+            <span class="text-danger">
+                @Html.ValidationMessageFor(x => x.CargaHoraria)
+            </span>
+        </div>
+
+        <!-- Carga Horária -->
+        <div class="mb-3">
+            <label for="MaxAlunos" class="form-label">Quantidade Máxima de Alunos</label>
+            <input type="number" class="form-control" asp-for="MaxAlunos" min="10" max="30">
+            <span class="text-danger">
+                @Html.ValidationMessageFor(x => x.MaxAlunos)
+            </span>
+        </div>
+
+        <div class="mb-2">
+            <h3> Cadastrar Professor </h3>
+            <div class="card mb-3">
+                <div class="card-body">
+                    Preencha os dados do professor na seção abaixo.
+                </div>
+            </div>
+        </div>
+
+        <!-- Nome Professor -->
+        <div class="mb-3">
+            <label for="Nome" class="form-label">Nome</label>
+            <input type="text" class="form-control" asp-for="Professor.Nome" maxlength="100" placeholder="Digite o nome do professor.">
+            <span class="text-danger">
+                @Html.ValidationMessageFor(x => x.Professor.Nome)
+            </span>
+        </div>
+
+        <div class="mb-3">
+            <label for="Email" class="form-label">Email</label>
+            <input type="email" class="form-control" asp-for="Professor.Email" maxlength="100" placeholder="Digite o email do professor.">
+            <span class="text-danger">
+                @Html.ValidationMessageFor(x => x.Professor.Email)
+            </span>
+        </div>
+
+        <div class="mb-3">
+            <label for="DataNascimento" class="form-label">Data de Nascimento</label>
+            <input type="date" class="form-control" asp-for="Professor.DataNascimento" min="1940-10-10" max="2010-10-10">
+            <span class="text-danger">
+                @Html.ValidationMessageFor(x => x.Professor.DataNascimento)
+            </span>
+        </div>
+
+        <div class="mb-3">
+            <label for="Genero" class="form-label">Gênero</label>
+            <select class="form-control" asp-for="Professor.Genero">
+                <option value="" selected>Selecione</option>
+                <option value="Feminino">Feminino</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Outro">Outro</option>
+            </select>
+            <span class="text-danger">
+                @Html.ValidationMessageFor(x => x.Professor.Genero)
+            </span>
+        </div>
+
+        <!-- Botões -->
+        <button type="submit" class="btn btn-primary w-100 mb-2">Adicionar Curso</button>
+        <a class="btn btn-secondary d-block" asp-action="Index" asp-controller="Curso" role="button">Voltar</a>
+    </form>
+</div>

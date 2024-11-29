@@ -1,0 +1,65 @@
+﻿@model List<AlunoModel>  // Certifique-se de que o namespace está correto
+
+@{
+    ViewData["Title"] = "Alunos - " + ViewBag.IdiomaSelecionado; // Título dinâmico com base no idioma selecionado
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">@ViewBag.IdiomaSelecionado</h1> <!-- Exibe o idioma selecionado -->
+   
+    <div class="card mb-3">
+        <div class="card-body">
+            A seguir, apresentamos a lista de alunos que participam do curso de @ViewBag.IdiomaSelecionado.
+        </div>
+    </div>
+
+    <div class="card shadow mb-4 mt-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                Lista Geral de Alunos - @ViewBag.IdiomaSelecionado
+            </h6>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Data-Nascimento</th>
+                            <th>Gênero</th>
+                            <th>Status</th>
+                            <th>#</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var aluno in Model)
+                            {
+                                <tr>
+                                    <td>@aluno.Nome</td>
+                                    <td>@aluno.DataNascimento.</td>
+                                    <td>@aluno.Genero</td>
+                                    <td>@aluno.Status</td>
+                                    <td>
+                                        <a class="btn-sm btn-primary text-decoration-none" asp-route-Id="@aluno.AlunoId" asp-controller="Aluno" asp-action="AtualizarAlunoAsync">Editar</a>
+                                        <a class="btn-sm btn-danger text-decoration-none" asp-route-Id="@aluno.AlunoId" asp-controller="Aluno" asp-action="RemoverAluno">Remover</a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-3">
+                                    Nenhum aluno encontrado.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

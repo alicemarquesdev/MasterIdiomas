@@ -1,0 +1,21 @@
+﻿@model List<CursoModel>
+
+<li class="nav-item">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
+       aria-expanded="true" aria-controls="collapsePages">
+        <i class="fas fa-fw fa-folder"></i>
+        <span>Cursos</span>
+    </a>
+    <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+        <div class="py-2 collapse-inner rounded">
+            @foreach (var idioma in Model)
+            {
+
+                <a class="nav-link" asp-controller="Curso" asp-action="Idioma" asp-route-idioma="@idioma.Idioma">
+                    <span>@idioma.Idioma</span>
+                </a>
+
+            }
+        </div>
+    </div>
+</li>

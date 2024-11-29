@@ -1,0 +1,81 @@
+﻿@model List<AlunoModel>
+@{
+    ViewData["Title"] = "Alunos do Curso";
+}
+
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Alunos do Curso</h1>
+
+    @if (TempData["MensagemSucesso"] != null)
+    {
+        <div class="alert alert-primary d-flex align-items-center" role="alert">
+            <div>
+                @TempData["MensagemSucesso"]
+            </div>
+
+            <button type="button" class="btn btn-primary btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
+
+        </div>
+    }
+
+    @if (TempData["MensagemErro"] != null)
+    {
+        <div class="alert alert-danger d-flex align-items-center" role="alert">
+            <div>
+                @TempData["MensagemErro"]
+            </div>
+            <button type="button" class="btn btn-danger btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
+
+        </div>
+    }
+
+    <div class="card mb-3">
+        <div class="card-body">
+            Visualize e gerencie todos os cursos ativos ou concluídos pelo aluno em seu histórico acadêmico.
+        </div>
+    </div>
+
+    <div class="card shadow mb-4 mt-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Alunos Matriculados no Curso</h6>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Data-Nasc.</th>
+                            <th>Gênero</th>
+                            <th>Status</th>
+                            <th>#</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var aluno in Model)
+                            {
+                                <tr>
+                                    <td>@aluno.Nome</td>
+                                    <td>@aluno.DataNascimento</td>
+                                    <td>@aluno.Genero</td>
+                                    <td>@aluno.Status</td>
+                                    <td>
+                                        <form asp-controller="Aluno" asp-action="RemoverAlunoDoCurso" method="post">
+                                            <input type="hidden" name="cursoId" value="@ViewBag.CursoId" />
+                                            <input type="hidden" name="alunoId" value="@aluno.AlunoId" />
+                                            <button type="submit" class="btn-sm btn-danger">Remover Curso</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

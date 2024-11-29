@@ -1,0 +1,26 @@
+﻿@model CursoModel
+
+@{
+    ViewData["Title"] = "Remover Curso";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Remover Curso</h1>
+    
+    <div class="card mb-3 mt-4">
+        <div class="card-body">
+            Atenção: Após a confirmação, os dados serão permanentemente excluídos e não poderão ser recuperados. Se preferir, você pode atualizar o status do curso para "Cancelado" ou "Concluído".
+
+            Tem certeza de que deseja remover o curso de <b>@Model.Idioma</b>?
+        </div>
+    </div>
+
+    <div class="container mb-3">
+        <form asp-action="RemoverCursoConfirmacao" method="post">
+            <input type="hidden" name="id" value="@Model.CursoId" />
+            <button type="submit" class="btn btn-danger w-100 mb-1">Remover</button>
+        </form>
+        <a class="btn btn-secondary d-block mt-1" asp-controller="Curso" asp-action="Index" role="button">Cancelar</a>
+
+    </div>
+</div>
