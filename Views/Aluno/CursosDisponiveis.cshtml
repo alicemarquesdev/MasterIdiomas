@@ -1,34 +1,19 @@
-﻿@model List<CursoModel>
+﻿@using MasterIdiomas.Enums
+@model List<CursoModel>
 
 @{
     ViewData["Title"] = "Cursos Disponíveis";
 }
 
 <div class="container-fluid px-4">
-    <h1 class="mt-4">Cursos Disponíveis</h1>
+    <ol class="breadcrumb mt-1 bg-transparent">
+        <li class="breadcrumb-item">
+            <a asp-controller="Aluno" asp-action="Index" class="text-decoration-none">Alunos</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Cursos Disponíveis</li>
+    </ol>
 
-    @if (TempData["MensagemSucesso"] != null)
-    {
-        <div class="alert alert-primary d-flex align-items-center" role="alert">
-            <div>
-                @TempData["MensagemSucesso"]
-            </div>
-
-            <button type="button" class="btn btn-primary btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
-
-        </div>
-    }
-
-    @if (TempData["MensagemErro"] != null)
-    {
-        <div class="alert alert-danger d-flex align-items-center" role="alert">
-            <div>
-                @TempData["MensagemErro"]
-            </div>
-            <button type="button" class="btn btn-danger btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
-
-        </div>
-    }
+    <h1 class="mt-2 mb-4">Cursos Disponíveis</h1>
 
     <div class="card mb-3">
         <div class="card-body">
@@ -43,7 +28,7 @@
 
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>Curso</th>
@@ -52,16 +37,14 @@
                             <th>Data de Início</th>
                             <th>Máx.Alunos</th>
                             <th>Status</th>
-                            <th>#</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @if (Model != null && Model.Any())
+                        @if (Model != null && Model.Any(curso => curso.Status == StatusCursoEnum.EmAndamento))
                         {
-                            foreach (var curso in Model)
+                            @foreach (var curso in Model.Where(c => c.Status == StatusCursoEnum.EmAndamento))
                             {
-                                @*  if (curso.Status == StatusCursoEnum.EmAndamento)
-                        { *@
                                 <tr>
                                     <td>@curso.Idioma</td>
                                     <td>@curso.Turno</td>
@@ -77,8 +60,13 @@
                                         </form>
                                     </td>
                                 </tr>
-
                             }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center">Nenhum curso disponível</td>
+                            </tr>
                         }
                     </tbody>
                 </table>

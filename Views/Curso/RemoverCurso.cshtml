@@ -5,22 +5,29 @@
 }
 
 <div class="container-fluid px-4">
-    <h1 class="mt-4">Remover Curso</h1>
-    
+    <ol class="breadcrumb mt-1 bg-transparent">
+        <li class="breadcrumb-item">
+            <a asp-controller="Curso" asp-action="Index" class="text-decoration-none">Cursos</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Remover Curso</li>
+    </ol>
+
+    <h1 class="mt-2 mb-4">Remover Curso</h1>
+
+    <!-- Aviso sobre exclusão -->
     <div class="card mb-3 mt-4">
         <div class="card-body">
-            Atenção: Após a confirmação, os dados serão permanentemente excluídos e não poderão ser recuperados. Se preferir, você pode atualizar o status do curso para "Cancelado" ou "Concluído".
-
-            Tem certeza de que deseja remover o curso de <b>@Model.Idioma</b>?
+            Atenção: Após a confirmação, os dados serão permanentemente excluídos e não poderão ser recuperados.
+            Se preferir, você pode atualizar o status do curso para "Cancelado" ou "Concluído".Tem certeza de que deseja remover o curso de <b>@Model.Idioma</b>?
         </div>
     </div>
 
+    <!-- Botões de ação -->
     <div class="container mb-3">
-        <form asp-action="RemoverCursoConfirmacao" method="post">
+        <form asp-controller="Curso" asp-action="RemoverCursoConfirmacao" method="post">
             <input type="hidden" name="id" value="@Model.CursoId" />
             <button type="submit" class="btn btn-danger w-100 mb-1">Remover</button>
         </form>
-        <a class="btn btn-secondary d-block mt-1" asp-controller="Curso" asp-action="Index" role="button">Cancelar</a>
-
+        <a class="btn btn-secondary d-block mt-1" asp-controller="Curso" asp-action="Index">Cancelar</a>
     </div>
 </div>

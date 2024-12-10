@@ -1,0 +1,29 @@
+﻿@model UsuarioModel
+
+@{
+    ViewData["Title"] = "Encerrar Conta";
+}
+
+<div class="container-fluid px-4">
+    <ol class="breadcrumb mt-1 bg-transparent">
+        <li class="breadcrumb-item">
+            <a asp-controller="Home" asp-action="Index" class="text-decoration-none">Visão Geral</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Encerrar Conta</li>
+    </ol>
+
+    <h1 class="mt-2 mb-4">Encerrar Conta</h1>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            Olá, @Model.Nome, você tem certeza de que deseja encerrar sua conta? Esta ação é irreversível e não poderá ser desfeita após a confirmação.
+        </div>
+    </div>
+
+    <form asp-controller="Usuario" asp-action="RemoverUsuarioConfirmacao" method="post" class="mb-3">
+        <input type="hidden" name="UsuarioId" value="@Model.UsuarioId" />
+        <button type="submit" class="btn btn-danger w-100 mb-1">Encerrar Conta</button>
+    </form>
+
+    <a class="btn btn-secondary d-block" asp-controller="Home" asp-action="Index" role="button">Cancelar</a>
+</div>

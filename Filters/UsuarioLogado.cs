@@ -5,26 +5,56 @@ using Newtonsoft.Json;
 
 namespace MasterIdiomas.Filters
 {
+    // Filtro personalizado para verificar se o usuário está logado
     public class UsuarioLogado : ActionFilterAttribute
     {
+        // Método que é executado antes da ação ser chamada
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            string sessaoUsuario = context.HttpContext.Session.GetString("sessaoUsuarioLogado");
-
-            if (string.IsNullOrEmpty(sessaoUsuario))
+            try
             {
-                context.Result = new RedirectToRouteResult(new RouteValueDictionary { { "controller", "Usuario" }, { "action", "Index" } });
-            }
-            else
-            {
-                UsuarioModel usuario = JsonConvert.DeserializeObject<UsuarioModel>(sessaoUsuario);
+                // Recupera a sessão do usuário
+                string sessaoUsuario = context.HttpContext.Session.GetString("sessaoUsuarioLogado");
 
-                if (usuario == null)
+                // Verifica se a sessão do usuário está vazia ou nula
+                if (string.IsNullOrEmpty(sessaoUsuario))
                 {
-                    context.Result = new RedirectToRouteResult(new RouteValueDictionary { { "controller", "Usuario" }, { "action", "Index" } });
+                    // Se a sessão estiver vazia, redireciona para a página de login
+                    context.Result = new RedirectToRouteResult(new RouteValueDictionary
+                    {
+                        { "controller", "Usuario" },
+                        { "action", "Index" }
+                    });
+                }
+                else
+                {
+                    // Desserializa a sessão do usuário para um objeto UsuarioModel
+                    UsuarioModel usuario = JsonConvert.DeserializeObject<UsuarioModel>(sessaoUsuario);
+
+                    // Verifica se o usuário não foi encontrado após a desserialização
+                    if (usuario == null)
+                    {
+                        // Se não encontrar o usuário, redireciona para a página de login
+                        context.Result = new RedirectToRouteResult(new RouteValueDictionary
+                        {
+                            { "controller", "Usuario" },
+                            { "action", "Index" }
+                        });
+                    }
                 }
 
+                // Chama o método base para continuar o fluxo normal
                 base.OnActionExecuting(context);
+            }
+            catch (Exception ex)
+            {
+                // Em caso de erro, redireciona para a página de login
+                context.Result = new RedirectToRouteResult(new RouteValueDictionary
+                {
+                    { "controller", "Usuario" },
+                    { "action", "Index" }
+                });
+                throw new InvalidOperationException("Erro ao verificar a sessão do usuário. Detalhes: " + ex.Message);
             }
         }
     }

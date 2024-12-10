@@ -1,51 +1,37 @@
 ﻿@model List<CursoModel>
+
 @{
     ViewData["Title"] = "Cursos - Professor";
 }
 
 <div class="container-fluid px-4">
-    <h1 class="mt-4 mb-4">Cursos - Professor</h1>
+    <!-- Breadcrumb -->
+    <ol class="breadcrumb mt-1 bg-transparent">
+        <li class="breadcrumb-item">
+            <a asp-controller="Professor" asp-action="Index" class="text-decoration-none">Professores</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Cursos do Professor</li>
+    </ol>
 
+    <h1 class="mt-2 mb-4">Cursos do Professor</h1>
 
-    @if (TempData["MensagemSucesso"] != null)
-    {
-        <div class="alert alert-primary d-flex align-items-center" role="alert">
-            <div>
-                @TempData["MensagemSucesso"]
-            </div>
-
-            <button type="button" class="btn btn-primary btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
-
-        </div>
-    }
-
-    @if (TempData["MensagemErro"] != null)
-    {
-        <div class="alert alert-danger d-flex align-items-center" role="alert">
-            <div>
-                @TempData["MensagemErro"]
-            </div>
-            <button type="button" class="btn btn-danger btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
-
-        </div>
-    }
-
+    <!-- Descrição dos Cursos -->
     <div class="card mb-3">
         <div class="card-body">
             Visualize e edite os cursos dos quais o professor lesiona.
         </div>
     </div>
 
+    <!-- Lista de Cursos -->
     <div class="card shadow mb-4 mt-4">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">
-                Lista de Cursos
-            </h6>
+            <h6 class="m-0 font-weight-bold text-primary">Lista de Cursos</h6>
             <a class="btn btn-primary" asp-controller="Curso" asp-action="AddCurso">Criar Curso e Professor</a>
         </div>
+
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>Curso</th>
@@ -53,14 +39,15 @@
                             <th>Nível</th>
                             <th>Data de Início</th>
                             <th>Status</th>
+                            <th>Alunos</th>
                             <th>Professor</th>
-                            <th>#</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         @if (Model != null && Model.Any())
                         {
-                            foreach (var curso in Model)
+                            @foreach (var curso in Model)
                             {
                                 <tr>
                                     <td>@curso.Idioma</td>
@@ -68,12 +55,25 @@
                                     <td>@curso.Nivel</td>
                                     <td>@curso.DataInicio.ToString("dd/MM/yyyy")</td>
                                     <td>@curso.Status</td>
+                                    <td>
+                                        <a class="btn-sm btn-success text-decoration-none" asp-route-CursoId="@curso.CursoId" asp-controller="Curso" asp-action="AlunosDoCurso">Alunos</a>
+                                    </td>
                                     <td>@curso.Professor.Nome</td>
                                     <td>
-                                        <a class="btn-sm btn-primary text-decoration-none d-block text-center" asp-route-Id="@curso.CursoId" asp-controller="Curso" asp-action="AtualizarCurso">Editar</a>
+                                        <form asp-controller="Professor" asp-action="RemoverProfessorDoCurso" method="post">
+                                            <input type="hidden" name="ProfessorId" value="@ViewBag.ProfessorId" />
+                                            <input type="hidden" name="CursoId" value="@curso.CursoId" />
+                                            <button type="submit" class="btn-sm btn-danger">Remover Professor</button>
+                                        </form>
                                     </td>
                                 </tr>
                             }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center">O professor não está em nenhum curso.</td>
+                            </tr>
                         }
                     </tbody>
                 </table>

@@ -5,32 +5,8 @@
 
 <div class="container-fluid px-4">
     <h1 class="mt-4">Cursos</h1>
-    
 
-    @if (TempData["MensagemSucesso"] != null)
-    {
-        <div class="alert alert-primary d-flex align-items-center" role="alert">
-            <div>
-                @TempData["MensagemSucesso"]
-            </div>
-
-            <button type="button" class="btn btn-primary btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
-
-        </div>
-    }
-
-    @if (TempData["MensagemErro"] != null)
-    {
-        <div class="alert alert-danger d-flex align-items-center" role="alert">
-            <div>
-                @TempData["MensagemErro"]
-            </div>
-            <button type="button" class="btn btn-danger btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
-
-        </div>
-    }
-
-
+    <!-- Card com Lista de Cursos -->
     <div class="card shadow mb-4 mt-4">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h6 class="m-0 font-weight-bold text-primary">Lista Geral de Cursos</h6>
@@ -38,18 +14,18 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>Curso</th>
                             <th>Turno</th>
                             <th>Nível</th>
                             <th>Data de Início</th>
-                            <th>Máx.Alunos</th>
+                            <th>Máx. Alunos</th>
                             <th>Status</th>
                             <th>Professor</th>
                             <th>Alunos</th>
-                            <th>#</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -64,22 +40,35 @@
                                     <td>@curso.DataInicio.ToString("dd/MM/yyyy")</td>
                                     <td>@curso.MaxAlunos</td>
                                     <td>@curso.Status</td>
-                                    <td>@curso.Professor.Nome</td>
                                     <td>
-                                        <a class="btn-sm btn-success text-decoration-none d-block text-center" asp-route-CursoId="@curso.CursoId" asp-controller="Curso" asp-action="AlunosDoCurso">Alunos</a>
+                                        @if (curso.Professor != null)
+                                        {
+                                            @curso.Professor.Nome
+                                        }
+                                        else
+                                        {
+                                            <a class="btn-sm btn-primary text-decoration-none d-block" asp-route-Id="@curso.CursoId" asp-controller="Curso" asp-action="AddProfessorAoCurso">Adicionar</a>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a class="btn-sm btn-primary text-decoration-none" asp-route-CursoId="@curso.CursoId" asp-controller="Curso" asp-action="AlunosDoCurso">Alunos</a>
                                     </td>
                                     <td class="text-center">
-@*                                         <a class="btn-sm btn-primary text-decoration-none" asp-route-Id="@curso.CursoId" asp-controller="Curso" asp-action="AtualizarCurso">Editar</a>
- *@                                        <a class="btn-sm btn-danger text-decoration-none" asp-route-Id="@curso.CursoId" asp-controller="Curso" asp-action="RemoverCurso">Remover</a>
+                                        <a class="btn-sm btn-primary text-decoration-none" asp-route-Id="@curso.CursoId" asp-controller="Curso" asp-action="AtualizarCurso"><i class="far fa-edit"></i></a>
+                                        <a class="btn-sm btn-danger text-decoration-none" asp-route-Id="@curso.CursoId" asp-controller="Curso" asp-action="RemoverCurso"><i class="far fa-trash-alt"></i></a>
                                     </td>
-
                                 </tr>
                             }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-3">Nenhum curso encontrado.</td>
+                            </tr>
                         }
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-   
 </div>

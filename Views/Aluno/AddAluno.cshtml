@@ -1,52 +1,33 @@
-﻿@model AlunoModel
+﻿@using MasterIdiomas.Enums
+@model AlunoModel
+
 @{
     ViewData["Title"] = "Adicionar Aluno";
 }
 
 <div class="container-fluid px-4">
-    <h1 class="mt-4">Adicionar Aluno</h1>
-    
-    @if (TempData["MensagemSucesso"] != null)
-    {
-        <div class="alert alert-primary d-flex align-items-center" role="alert">
-            <div>
-                @TempData["MensagemSucesso"]
-            </div>
+    <ol class="breadcrumb mt-1 bg-transparent">
+        <li class="breadcrumb-item">
+            <a asp-controller="Aluno" asp-action="Index" class="text-decoration-none">Alunos</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Adicionar Aluno</li>
+    </ol>
 
-            <button type="button" class="btn btn-primary btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
-
-        </div>
-    }
-
-    @if (TempData["MensagemErro"] != null)
-    {
-        <div class="alert alert-danger d-flex align-items-center" role="alert">
-            <div>
-                @TempData["MensagemErro"]
-            </div>
-            <button type="button" class="btn btn-danger btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
-
-        </div>
-    }
+    <h1 class="mt-2 mb-4">Adicionar Aluno</h1>
 
     <form asp-controller="Aluno" asp-action="AddAluno" method="post">
-
         <!-- Nome -->
         <div class="mb-3">
             <label for="Nome" class="form-label">Nome</label>
-            <input type="text" class="form-control" asp-for="Nome" maxlength="100">
-            <span class="text-danger">
-                @Html.ValidationMessageFor(x => x.Nome)
-            </span>
+            <input type="text" class="form-control" asp-for="Nome" maxlength="100" placeholder="Digite o nome do aluno" />
+            <span class="text-danger">@Html.ValidationMessageFor(x => x.Nome)</span>
         </div>
 
         <!-- Data de Nascimento -->
         <div class="mb-3">
             <label for="DataNascimento" class="form-label">Data de Nascimento</label>
-            <input type="date" class="form-control" asp-for="DataNascimento" min="1940-12-25" max="2010 -12-25">
-            <span class="text-danger">
-                @Html.ValidationMessageFor(x => x.DataNascimento)
-            </span>
+            <input type="date" class="form-control" asp-for="DataNascimento" min="1940-12-25" max="2020-12-25">
+            <span class="text-danger">@Html.ValidationMessageFor(x => x.DataNascimento)</span>
         </div>
 
         <!-- Gênero -->
@@ -54,15 +35,12 @@
             <label for="Genero" class="form-label">Gênero</label>
             <select class="form-control" asp-for="Genero">
                 <option value="" selected>Selecione</option>
-                <option value="Feminino">Feminino</option>
-                <option value="Masculino">Masculino</option>
-                <option value="Outro">Outro</option>
+                <option value="@GeneroEnum.Feminino">@GeneroEnum.Feminino</option>
+                <option value="@GeneroEnum.Masculino">@GeneroEnum.Masculino</option>
+                <option value="@GeneroEnum.Outro">@GeneroEnum.Outro</option>
             </select>
-            <span class="text-danger">
-                @Html.ValidationMessageFor(x => x.Genero)
-            </span>
+            <span class="text-danger">@Html.ValidationMessageFor(x => x.Genero)</span>
         </div>
-
 
         <!-- Botões -->
         <button type="submit" class="btn btn-primary w-100 mb-1">Adicionar Aluno</button>

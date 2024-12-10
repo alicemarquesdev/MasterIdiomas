@@ -5,9 +5,7 @@
 }
 
 <body class="bg-gradient-primary">
-
     <div class="container">
-
         <div class="card o-hidden border-0 shadow-lg my-5">
             <div class="card-body p-0">
                 <div class="row">
@@ -16,49 +14,32 @@
                     </div>
                     <div class="col-lg-7">
                         <div class="p-5">
-
-
-                            @if (TempData["MensagemErro"] != null)
-                            {
-                <div class="alert alert-danger d-flex align-items-center" role="alert">
-                    <div>
-                                        @TempData["MensagemErro"]
-                    </div>
-                    <button type="button" class="btn btn-danger btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
-
-                </div>
-                            }
-
-
                             <div class="text-center">
                                 <h1 class="h4 text-gray-900 mb-4">Criar conta!</h1>
                             </div>
                             <form class="user" asp-controller="Login" asp-action="CriarConta" method="post">
                                 <div class="form-group">
-                                    <input type="text" class="form-control form-control-user" asp-for="Nome"
-                                           placeholder="Nome">
-                                    <span class="text-danger">
-                                        @Html.ValidationMessageFor(x => x.Nome)
-                                    </span>
+                                    <input type="text" class="form-control form-control-user" asp-for="Nome" placeholder="Nome">
+                                    <span class="text-danger">@Html.ValidationMessageFor(x => x.Nome)</span>
                                 </div>
                                 <div class="form-group">
-                                    <input type="email" class="form-control form-control-user" asp-for="Email"
-                                           placeholder="Email">
-                                    <span class="text-danger">
-                                        @Html.ValidationMessageFor(x => x.Email)
-                                    </span>
+                                    <input type="email" class="form-control form-control-user" asp-for="Email" placeholder="Email">
+                                    <span class="text-danger">@Html.ValidationMessageFor(x => x.Email)</span>
                                 </div>
                                 <div class="form-group">
-                                    <input type="password" class="form-control form-control-user"
-                                           asp-for="Senha" placeholder="Senha">
-                                    <span class="text-danger">
-                                        @Html.ValidationMessageFor(x => x.Senha)
-                                    </span>
+                                    <input type="password" class="form-control form-control-user" asp-for="Senha" placeholder="Senha">
+                                    <span class="text-danger">@Html.ValidationMessageFor(x => x.Senha)</span>
+                                    <small class="form-text text-muted mt-2">
+                                        A senha deve ter pelo menos 8 caracteres, incluindo:
+                                        <ul>
+                                            <li>1 letra maiúscula</li>
+                                            <li>1 letra minúscula</li>
+                                            <li>1 número</li>
+                                            <li>1 caractere especial (como &commat;, $, !, etc.)</li>
+                                        </ul>
+                                    </small>
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-user btn-block">
-                                    Criar Conta
-                                </button>
-
+                                <button type="submit" class="btn btn-primary btn-user btn-block">Criar Conta</button>
                             </form>
                             <hr>
                             <div class="text-center">
@@ -72,7 +53,6 @@
                 </div>
             </div>
         </div>
-
     </div>
-
 </body>
+

@@ -1,59 +1,79 @@
-﻿using MasterIdiomas.Helper;
+﻿using MasterIdiomas.Filters;
+using MasterIdiomas.Helper;
 using MasterIdiomas.Models;
 using MasterIdiomas.Repositorio.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MasterIdiomas.Controllers
 {
+    [UsuarioLogado]
     public class HomeController : Controller
     {
-        private readonly ILogger<LoginController> _logger;
+        // Dependências injetadas no controlador
         private readonly ISessao _sessao;
+
         private readonly ICursoRepositorio _cursoRepositorio;
         private readonly IProfessorRepositorio _professorRepositorio;
-        private readonly IAlunoCursoRepositorio _alunoCursoRepositorio;
         private readonly IAlunoRepositorio _alunoRepositorio;
-        private readonly IUsuarioRepositorio _usuarioRepositorio;
+        private readonly IAlunoCursoRepositorio _alunoCursoRepositorio;
 
-        public HomeController(ILogger<LoginController> logger,
-                                ISessao sessao,
-                                ICursoRepositorio cursoRepositorio,
-                                IProfessorRepositorio professorRepositorio,
-                                IAlunoRepositorio alunoRepositorio,
-                                IAlunoCursoRepositorio alunoCursoRepositorio,
-                                IUsuarioRepositorio usuarioRepositorio)
+        // Construtor que recebe as dependências
+        public HomeController(ISessao sessao,
+                              ICursoRepositorio cursoRepositorio,
+                              IProfessorRepositorio professorRepositorio,
+                              IAlunoRepositorio alunoRepositorio,
+                              IAlunoCursoRepositorio alunoCursoRepositorio)
         {
-            _logger = logger;
             _sessao = sessao;
             _cursoRepositorio = cursoRepositorio;
             _professorRepositorio = professorRepositorio;
             _alunoRepositorio = alunoRepositorio;
             _alunoCursoRepositorio = alunoCursoRepositorio;
-            _usuarioRepositorio = usuarioRepositorio;
         }
 
+        // Método para exibir a página inicial
         public async Task<IActionResult> Index(int cursoId)
         {
-            var usuario = _sessao.BuscarSessaoUsuario();
+            try
+            {
+                // Recupera as informações do usuário da sessão
+                var usuario = _sessao.BuscarSessaoUsuario();
 
-            if (usuario == null) return RedirectToAction("Index", "Usuario");
+                // Se o usuário não estiver logado, redireciona para a página de login
+                if (usuario == null)
+                {
+                    return RedirectToAction("Index", "Usuario");
+                }
 
-            ViewBag.Usuario = usuario.Nome;
+                // Define o nome do usuário na view
+                ViewBag.Usuario = usuario.Nome;
 
-            List<CursoModel> cursos = await _cursoRepositorio.BuscarTodosCursosAsync();
+                // Carrega a lista de cursos do repositório
+                List<CursoModel> cursos = await _cursoRepositorio.BuscarTodosCursosAsync();
 
-            int totalAlunos = _alunoRepositorio.TotalAlunos();
-            int totalProfessores = _professorRepositorio.TotalProfessores();
-            int totalIdiomas = _cursoRepositorio.TotalIdiomas();
-            int totalCursos = _cursoRepositorio.TotalCursos();
+                Dictionary<int, int> totalAlunosPorCurso = new();
 
-            ViewBag.TotalAlunos = totalAlunos;
-            ViewBag.TotalProfessores = totalProfessores;
-            ViewBag.ToTalIdiomas = totalIdiomas;
-            ViewBag.TotalCursos = totalCursos;
-            ViewBag.TotalDeAlunosCurso = await _alunoCursoRepositorio.TotalAlunosCurso(cursoId);
+                foreach (var curso in cursos)
+                {
+                    totalAlunosPorCurso[curso.CursoId] = await _alunoCursoRepositorio.TotalAlunosCurso(curso.CursoId);
+                }
 
-            return View(cursos);
+                ViewBag.TotalAlunosPorCurso = totalAlunosPorCurso;
+
+                // Passa esses valores para a View
+                ViewBag.TotalAlunos = _alunoRepositorio.TotalAlunos();
+                ViewBag.TotalProfessores = _professorRepositorio.TotalProfessores();
+                ViewBag.TotalIdiomas = _cursoRepositorio.TotalIdiomas();
+                ViewBag.TotalCursos = _cursoRepositorio.TotalCursos();
+
+                return View(cursos);
+            }
+            catch (Exception)
+            {
+                // Caso ocorra algum erro durante a execução, exibe uma mensagem de erro
+                TempData["MensagemErro"] = "Ocorreu um erro ao carregar as informações. Tente novamente mais tarde.";
+                return View();
+            }
         }
     }
 }

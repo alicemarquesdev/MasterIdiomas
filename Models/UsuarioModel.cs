@@ -5,22 +5,24 @@ namespace MasterIdiomas.Models
 {
     public class UsuarioModel
     {
-        [Key] // Indica que este campo é a chave primária
+        [Key]
         public int UsuarioId { get; set; }
 
-        [Required(ErrorMessage = "O nome é obrigatório.")]
+        [Required(ErrorMessage = "Por favor, insira o nome.")]
         [StringLength(100, ErrorMessage = "O nome deve ter no máximo 100 caracteres.")]
         public string Nome { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "O email é obrigatório.")]
-        [EmailAddress(ErrorMessage = "O email informado não é válido.")]
+        [Required(ErrorMessage = "O e-mail é obrigatório.")]
+        [EmailAddress(ErrorMessage = "O e-mail informado não é válido.")]
         public string Email { get; set; } = string.Empty;
 
         [DataType(DataType.Date)]
-        public DateTime? DataCadastro { get; set; } = DateTime.Now; // Define valor padrão
+        public DateTime? DataCadastro { get; set; } = DateTime.Now;
 
         [Required(ErrorMessage = "A senha é obrigatória.")]
-        [MinLength(6, ErrorMessage = "A senha deve ter pelo menos 6 caracteres.")]
+        [MinLength(8, ErrorMessage = "A senha deve ter no mínimo 8 caracteres.")]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$",
+            ErrorMessage = "A senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial.")]
         public string Senha { get; set; } = string.Empty;
 
         // Verifica se a senha informada é válida comparando com o hash armazenado

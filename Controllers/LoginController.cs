@@ -8,19 +8,16 @@ namespace MasterIdiomas.Controllers
     public class LoginController : Controller
     {
         private readonly IUsuarioRepositorio _usuarioRepositorio;
-        private readonly IAlunoRepositorio _alunoRepositorio;
         private readonly ISessao _sessao;
         private readonly IEmail _email;
 
         public LoginController(IUsuarioRepositorio usuarioRepositorio,
                                 ISessao sessao,
-                                IEmail email,
-                                IAlunoRepositorio alunoRepositorio)
+                                IEmail email)
         {
             _usuarioRepositorio = usuarioRepositorio;
             _sessao = sessao;
             _email = email;
-            _alunoRepositorio = alunoRepositorio;
         }
 
         public IActionResult CriarConta()
@@ -49,8 +46,8 @@ namespace MasterIdiomas.Controllers
         {
             _sessao.RemoverSessaoUsuario();
             return RedirectToAction("Index", "Login");
-
         }
+
         [HttpPost]
         public async Task<IActionResult> CriarConta(UsuarioModel usuario)
         {
@@ -64,13 +61,12 @@ namespace MasterIdiomas.Controllers
                     return RedirectToAction("Index", "Login");
                 }
                 TempData["MensagemErro"] = "Por favor, verifique os dados inseridos.";
-                return RedirectToAction("Index", "Login");
+                return View(usuario);
             }
-            catch
+            catch (Exception ex)
             {
-                TempData["MensagemErro"] = "Algo está errado. Por favor, tente novamente.";
-
-                return RedirectToAction("Index", "Login");
+                TempData["MensagemErro"] = $"{ex.Message}";
+                return View(usuario);
             }
         }
 
@@ -124,25 +120,26 @@ namespace MasterIdiomas.Controllers
                         {
                             await _usuarioRepositorio.AtualizarUsuarioAsync(usuario);
                             TempData["MensagemSucesso"] = $"Enviamos para seu e-mail cadastrado uma nova senha.";
-                            return RedirectToAction("Index", "Usuario");
+                            return RedirectToAction("Index");
                         }
                         else
                         {
-                            TempData["MensagemErro"] = $"Não conseguimos enviar e-mail. Por favor, tente novamente.";
+                            TempData["MensagemErro"] = $"Não conseguimos enviar o e-mail. Por favor, tente novamente.";
                         }
 
-                        return RedirectToAction("Index", "Usuario");
+                        return View("RedefinirSenha", redefinirSenha);
                     }
 
-                    TempData["MensagemErro"] = $"Não conseguimos redefinir sua senha. Por favor, verifique os dados informados.";
+                    TempData["MensagemErro"] = $"Usuário não encontrado. Por favor, verifique os dados informados.";
                 }
 
-                return View("Index");
+                TempData["MensagemErro"] = $"Não conseguimos redefinir sua senha. Por favor, verifique os dados informados.";
+                return View("RedefinirSenha", redefinirSenha);
             }
             catch (Exception erro)
             {
-                TempData["MensagemErro"] = $"Ops, não conseguimos realizar seu login, tente novamante, detalhe do erro: {erro.Message}";
-                return RedirectToAction("Index");
+                TempData["MensagemErro"] = $"Desculpe, ocorreu um erro: {erro.Message}";
+                return View("RedefinirSenha", redefinirSenha);
             }
         }
     }

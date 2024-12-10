@@ -1,4 +1,5 @@
 ﻿using MasterIdiomas.Data;
+using MasterIdiomas.Enums;
 using MasterIdiomas.Models;
 using MasterIdiomas.Repositorio.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -8,121 +9,237 @@ namespace MasterIdiomas.Repositorio
     public class CursoRepositorio : ICursoRepositorio
     {
         private readonly BancoContext _context;
-        private readonly IProfessorRepositorio _professorRepositorio;
+        private readonly IAlunoCursoRepositorio _alunoCursoRepositorio;
 
-        public CursoRepositorio(BancoContext context, IProfessorRepositorio professorRepositorio)
+        // Construtor que recebe o contexto do banco e o repositório de professores
+        public CursoRepositorio(BancoContext context,
+                                IAlunoCursoRepositorio alunoCursoRepositorio)
         {
             _context = context;
-            _professorRepositorio = professorRepositorio;
+            _alunoCursoRepositorio = alunoCursoRepositorio;
         }
 
+        // Buscar curso por ID, incluindo informações do professor e alunos
         public async Task<CursoModel> BuscarCursoPorIdAsync(int id)
         {
-            return await _context.Cursos.Include(c => c.Professor)
-                                        .Include(a => a.AlunoCurso).ThenInclude(a => a.Aluno)
-                                        .FirstOrDefaultAsync(x => x.CursoId == id);
+            try
+            {
+                return await _context.Cursos
+                    .Include(c => c.Professor)
+                    .Include(a => a.AlunoCurso).ThenInclude(a => a.Aluno)
+                    .FirstOrDefaultAsync(x => x.CursoId == id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao buscar o curso. Tente novamente.", ex);
+            }
         }
 
+        // Buscar todos os idiomas distintos
         public async Task<List<CursoModel>> BuscarIdiomasAsync()
         {
-            var idiomasDistintos = await _context.Cursos
-               .Select(i => i.Idioma)
-               .Distinct()
-               .ToListAsync();
-
-            // Criar uma lista de CursoModel a partir dos idiomas distintos
-            var cursosModelList = idiomasDistintos.Select(idioma => new CursoModel
+            try
             {
-                Idioma = idioma // Supondo que CursoModel tem uma propriedade chamada Idioma
-            }).ToList();
+                var idiomasDistintos = await _context.Cursos
+                   .Select(i => i.Idioma)
+                   .Distinct()
+                   .ToListAsync();
 
-            return cursosModelList;
+                // Criar uma lista de CursoModel a partir dos idiomas distintos
+                var cursosModelList = idiomasDistintos.Select(idioma => new CursoModel
+                {
+                    Idioma = idioma // Supondo que CursoModel tem uma propriedade chamada Idioma
+                }).ToList();
+
+                return cursosModelList;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao buscar os idiomas. Tente novamente.", ex);
+            }
         }
 
+        // Buscar todos os cursos com informações de alunos e professores
         public async Task<List<CursoModel>> BuscarTodosCursosAsync()
         {
-            return await _context.Cursos.Include(a => a.AlunoCurso).ThenInclude(a => a.Aluno).Include(c => c.Professor).ToListAsync();
+            try
+            {
+                return await _context.Cursos
+                    .Include(a => a.AlunoCurso).ThenInclude(a => a.Aluno)
+                    .Include(c => c.Professor)
+                    .OrderBy(x => x.Idioma)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao buscar os cursos. Tente novamente.", ex);
+            }
         }
 
+        // Verificar se existe um curso com as mesmas características, mas ignorando um ID de curso
         public async Task<CursoModel> BuscarCursoExistenteAsync(string idioma, string turno, string nivel, int cursoIdIgnorar)
         {
-            return await _context.Cursos.FirstOrDefaultAsync(x => x.Idioma == idioma && x.Turno == turno && x.Nivel == nivel && x.CursoId != cursoIdIgnorar);
+            try
+            {
+                return await _context.Cursos.FirstOrDefaultAsync(x => x.Idioma == idioma && x.Turno == turno && x.Nivel == nivel && x.CursoId != cursoIdIgnorar);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao verificar a existência do curso. Tente novamente.", ex);
+            }
         }
 
+        // Retornar a quantidade de cursos em andamento
         public int CursosEmAndamento()
         {
-            return _context.Cursos.Where(x => x.Status == Enums.StatusCursoEnum.EmAndamento).Select(c => c.Idioma).Distinct().Count();
+            try
+            {
+                return _context.Cursos
+                    .Where(x => x.Status == StatusCursoEnum.EmAndamento)
+                    .Select(c => c.Idioma)
+                    .Distinct()
+                    .Count();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao contar os cursos em andamento. Tente novamente.", ex);
+            }
         }
 
+        // Retornar o total de cursos cadastrados
         public int TotalCursos()
         {
-            return _context.Cursos.ToList().Count();
+            try
+            {
+                return _context.Cursos.Count();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao contar o total de cursos. Tente novamente.", ex);
+            }
         }
 
+        // Retornar o total de idiomas cadastrados
         public int TotalIdiomas()
         {
-            return _context.Cursos.Select(i => i.Idioma).Distinct().Count();
+            try
+            {
+                return _context.Cursos.Select(i => i.Idioma).Distinct().Count();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao contar os idiomas. Tente novamente.", ex);
+            }
         }
 
+        // Adicionar um novo curso ao banco de dados
         public async Task AddCursoAsync(CursoModel curso)
         {
-            CursoModel cursoExistente = await BuscarCursoExistenteAsync(curso.Idioma, curso.Turno, curso.Nivel, curso.CursoId);
-            if (cursoExistente != null) throw new Exception("Infelizmente, não foi possível criar o curso, já existe um curso registrado com o mesmo idioma, turno e nível.");
+            const int numeroMaxDeCursos = 10;
+            try
+            {
+                var cursoExistente = await BuscarCursoExistenteAsync(curso.Idioma, curso.Turno, curso.Nivel, curso.CursoId);
+                if (cursoExistente != null)
+                {
+                    throw new Exception("Já existe um curso registrado com o mesmo idioma, turno e nível.");
+                }
 
-            var cursosEmAndamento = CursosEmAndamento();
-            if (cursosEmAndamento == 12) throw new Exception("Infelizmente, não foi possível criar o curso, já existe um curso igual a esse.");
+                var idiomasExistentes = await BuscarIdiomasAsync();
+                if (idiomasExistentes.Count >= numeroMaxDeCursos)
+                {
+                    throw new Exception($"Não é possível criar mais de {numeroMaxDeCursos} cursos de idiomas diferentes.");
+                }
 
-            var professorExistente = await _professorRepositorio.BuscarProfessorExistenteAsync(curso.Professor.Email, curso.Professor.Nome, curso.Professor.ProfessorId);
-            if (professorExistente != null) throw new Exception("Infelizmente, não foi possível criar o curso, já existe um professor registrado com o mesmo email e nome.");
-
-            curso.Status = Enums.StatusCursoEnum.EmAndamento;
-
-            await _context.Cursos.AddAsync(curso);
-            await _professorRepositorio.AddProfessorAsync(curso.Professor);
-            await _context.SaveChangesAsync();
+                curso.Status = StatusCursoEnum.EmAndamento; // Definir o status como "Em Andamento"
+                await _context.Cursos.AddAsync(curso);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao adicionar o curso. Tente novamente.", ex);
+            }
         }
 
+        // Atualizar as informações de um curso existente
         public async Task AtualizarCursoAsync(CursoModel curso)
         {
-            var cursoDb = await BuscarCursoPorIdAsync(curso.CursoId);
-            if (cursoDb == null) throw new Exception("Não foi possível concluir a operação. Verifique os dados e tente novamente.");
+            const int numeroMaxDeCursos = 10;
 
-            var cursoDuplicado = await BuscarCursoExistenteAsync(curso.Idioma, curso.Turno, curso.Nivel, curso.CursoId);
-            if (cursoDuplicado != null) throw new Exception("Infelizmente, não foi possível editar o curso, já existe um curso registrado com o mesmo idioma, turno e nível.");
+            try
+            {
+                var cursoDb = await BuscarCursoPorIdAsync(curso.CursoId);
+                if (cursoDb == null)
+                    throw new Exception("Curso não encontrado. Verifique os dados e tente novamente.");
 
-           
-            var cursosEmAndamento = CursosEmAndamento();
-            if ((curso.Status != Enums.StatusCursoEnum.EmAndamento && cursosEmAndamento == 1) || (cursosEmAndamento == 12 && curso.Status == Enums.StatusCursoEnum.EmAndamento)) throw new Exception("Infelizmente, não é possível atualizar o status devido aos limites do sistema.");
+                // Verificar se existe um curso com o mesmo idioma, turno e nível
+                var cursoDuplicado = await BuscarCursoExistenteAsync(curso.Idioma, curso.Turno, curso.Nivel, curso.CursoId);
+                if (cursoDuplicado != null)
+                    throw new Exception("Já existe um curso registrado com o mesmo idioma, turno e nível.");
 
-            cursoDb.Idioma = curso.Idioma;
-            cursoDb.Turno = curso.Turno;
-            cursoDb.Nivel = curso.Nivel;
-            cursoDb.DataInicio = curso.DataInicio;
-            cursoDb.CargaHoraria = curso.CargaHoraria;
-            cursoDb.MaxAlunos = curso.MaxAlunos;
-            cursoDb.DataAtualizacao = DateTime.Now;
-            cursoDb.Status = curso.Status;
-            cursoDb.ProfessorId = curso.ProfessorId;
+                // Verificar a quantidade de cursos em andamento antes de atualizar o status
+                var idiomasExistentes = await BuscarIdiomasAsync();
+                if (idiomasExistentes.Count >= numeroMaxDeCursos)
+                {
+                    throw new Exception($"Não é possível criar mais de {numeroMaxDeCursos} cursos de idiomas diferentes.");
+                }
 
+                // Atualizar os dados do curso
+                cursoDb.Idioma = curso.Idioma;
+                cursoDb.Turno = curso.Turno;
+                cursoDb.Nivel = curso.Nivel;
+                cursoDb.DataInicio = curso.DataInicio;
+                cursoDb.CargaHoraria = curso.CargaHoraria;
+                cursoDb.MaxAlunos = curso.MaxAlunos;
+                cursoDb.DataAtualizacao = DateTime.Now;
+                cursoDb.Status = curso.Status;
 
+                if (cursoDb.Status == StatusCursoEnum.Cancelado)
+                {
+                    // Buscar alunos associados ao curso
+                    List<AlunoModel> alunosDoCurso = await _alunoCursoRepositorio.BuscarAlunosDoCursoAsync(curso.CursoId);
 
-            _context.Cursos.Update(cursoDb);
-            await _context.SaveChangesAsync();
+                    if (alunosDoCurso != null && alunosDoCurso.Any())
+                    {
+                        foreach (var aluno in alunosDoCurso)
+                        {
+                            await _alunoCursoRepositorio.RemoverAlunoDoCursoAsync(aluno.AlunoId, curso.CursoId);
+                        }
+                    }
+                }
+
+                _context.Cursos.Update(cursoDb);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao atualizar o curso. Tente novamente.", ex);
+            }
         }
 
+        // Remover um curso do banco de dados
         public async Task<bool> RemoverCursoAsync(int id)
         {
-            CursoModel cursoDb = await BuscarCursoPorIdAsync(id);
+            try
+            {
+                var cursoDb = await BuscarCursoPorIdAsync(id);
+                if (cursoDb == null)
+                    throw new Exception("Curso não encontrado. Verifique os dados e tente novamente.");
 
-            if (cursoDb == null) throw new Exception("Não foi possível concluir a operação. Verifique os dados e tente novamente.");
+                // Verificar a quantidade de cursos em andamento antes de remover
+                var cursosEmAndamento = CursosEmAndamento();
+                if (cursoDb.Status == StatusCursoEnum.EmAndamento && cursosEmAndamento == 1)
+                {
+                    throw new Exception("Limites do sistema foram atingidos. Não é possível excluir o curso.");
+                }
 
-            var cursosEmAndamento = CursosEmAndamento();
-
-            if (cursoDb.Status == Enums.StatusCursoEnum.EmAndamento && cursosEmAndamento == 1) throw new Exception("Infelizmente, não é possível deletar o curso devido aos limites do sistema.");
-
-            _context.Remove(cursoDb);
-            await _context.SaveChangesAsync();
-            return true;
+                _context.Cursos.Remove(cursoDb);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao remover o curso. Tente novamente.", ex);
+            }
         }
     }
 }

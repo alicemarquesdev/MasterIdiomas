@@ -3,35 +3,8 @@
     ViewData["Title"] = "Alunos";
 }
 
-
 <div class="container-fluid px-4">
     <h1 class="mt-4">Alunos</h1>
-    
-
-    @if (TempData["MensagemSucesso"] != null)
-    {
-        <div class="alert alert-primary d-flex align-items-center" role="alert">
-            <div>
-                @TempData["MensagemSucesso"]
-            </div>
-
-            <button type="button" class="btn btn-primary btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
-
-        </div>
-    }
-
-    @if (TempData["MensagemErro"] != null)
-    {
-        <div class="alert alert-danger d-flex align-items-center" role="alert">
-            <div>
-                @TempData["MensagemErro"]
-            </div>
-            <button type="button" class="btn btn-danger btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
-
-        </div>
-    }
-
-  
 
     <div class="card shadow mb-4 mt-4">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
@@ -41,49 +14,46 @@
 
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
                     <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Data Nascimento</th>
-                        <th>Gênero</th>
-                        <th>Status</th>
-                        <th>Cursos</th>
-                        <th>Cursos Disponíveis</th>
-                        <th>#</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-
-                    @if (Model != null && Model.Any())
-                    {
-                        foreach (var aluno in Model)
+                        <tr>
+                            <th>Nome</th>
+                            <th>Data Nascimento</th>
+                            <th>Gênero</th>
+                            <th>Status</th>
+                            <th>Cursos</th>
+                            <th>Cursos Disponíveis</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var aluno in Model)
+                            {
+                                <tr>
+                                    <td>@aluno.Nome</td>
+                                    <td>@aluno.DataNascimento.ToString("dd/MM/yyyy")</td>
+                                    <td>@aluno.Genero</td>
+                                    <td>@aluno.Status</td>
+                                    <td><a class="btn-sm btn-primary text-decoration-none d-block" asp-route-Id="@aluno.AlunoId" asp-controller="Aluno" asp-action="CursosDoAluno">Cursos</a></td>
+                                    <td><a class="btn-sm btn-primary text-decoration-none d-block" asp-route-Id="@aluno.AlunoId" asp-controller="Aluno" asp-action="CursosDisponiveis">Cursos Disponíveis</a></td>
+                                    <td class="text-center">
+                                        <a class="btn-sm btn-primary text-decoration-none" asp-route-Id="@aluno.AlunoId" asp-controller="Aluno" asp-action="AtualizarAluno"><i class="far fa-edit"></i></a>
+                                        <a class="btn-sm btn-danger text-decoration-none" asp-route-Id="@aluno.AlunoId" asp-controller="Aluno" asp-action="RemoverAluno"><i class="far fa-trash-alt"></i></a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
                         {
                             <tr>
-                                <td>@aluno.Nome</td>
-                                <td>@aluno.DataNascimento.ToString("dd/MM/yyyy")</td>
-                                <td>@aluno.Genero</td>
-                                <td>@aluno.Status</td>
-                                <td>
-                                    <a class="btn-sm btn-primary text-decoration-none" asp-route-Id="@aluno.AlunoId" asp-controller="Aluno" asp-action="CursosDoAluno">Cursos</a>
-                                </td>
-                                <td>
-                                    <a class="btn-sm btn-primary text-decoration-none d-block text-center" asp-route-Id="@aluno.AlunoId" asp-controller="Aluno" asp-action="CursosDisponiveis">Cursos Disponíveis</a>
-                                </td>
-                                <td>
-                                    <a class="btn-sm btn-primary text-decoration-none" asp-route-Id="@aluno.AlunoId" asp-controller="Aluno" asp-action="AtualizarAluno">Editar</a>
-                                    <a class="btn-sm btn-danger text-decoration-none" asp-route-Id="@aluno.AlunoId" asp-controller="Aluno" asp-action="RemoverAluno">Remover</a>
-                                </td>
-                                
-
+                                <td colspan="7" class="text-center">Nenhum aluno encontrado.</td>
                             </tr>
                         }
-                    }
-                </tbody>
+                    </tbody>
                 </table>
             </div>
         </div>
     </div>
-
 </div>

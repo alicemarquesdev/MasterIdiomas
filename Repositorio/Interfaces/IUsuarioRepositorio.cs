@@ -13,5 +13,7 @@ namespace MasterIdiomas.Repositorio.Interfaces
         Task AtualizarUsuarioAsync(UsuarioModel usuario);
 
         Task AlterarSenhaAsync(AlterarSenhaModel alterarSenhaModel);
+
+        Task<bool> RemoverUsuario(int id);
     }
 }

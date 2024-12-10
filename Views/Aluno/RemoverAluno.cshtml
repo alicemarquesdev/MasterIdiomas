@@ -5,13 +5,21 @@
 }
 
 <div class="container-fluid px-4">
-    <h1 class="mt-4">Remover Aluno</h1>
-   
+    <ol class="breadcrumb mt-1 bg-transparent">
+        <li class="breadcrumb-item">
+            <a asp-controller="Aluno" asp-action="Index" class="text-decoration-none">Alunos</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Remover Aluno</li>
+    </ol>
+
+    <h1 class="mt-2 mb-4">Remover Aluno</h1>
+
     <div class="card mb-3">
         <div class="card-body">
             Os dados serão perdidos permanentemente após a confirmação. Você tem certeza de que deseja excluir <b>@Model.Nome</b>?
         </div>
     </div>
+
     <div class="container mb-3">
         <form asp-controller="Aluno" asp-action="RemoverAlunoConfirmacao" method="post">
             <input type="hidden" name="id" value="@Model.AlunoId" />

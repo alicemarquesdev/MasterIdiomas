@@ -4,33 +4,8 @@
     ViewData["Title"] = "Professores";
 }
 
-
 <div class="container-fluid px-4">
-    <h1 class="mt-4">Professores</h1>
-    
-
-    @if (TempData["MensagemSucesso"] != null)
-    {
-        <div class="alert alert-primary d-flex align-items-center" role="alert">
-            <div>
-                @TempData["MensagemSucesso"]
-            </div>
-
-            <button type="button" class="btn btn-primary btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
-
-        </div>
-    }
-
-    @if (TempData["MensagemErro"] != null)
-    {
-        <div class="alert alert-danger d-flex align-items-center" role="alert">
-            <div>
-                @TempData["MensagemErro"]
-            </div>
-            <button type="button" class="btn btn-danger btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
-
-        </div>
-    }
+    <h1 class="mt-4 mb-4">Professores</h1>
 
     <div class="card shadow mb-4 mt-4">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
@@ -40,18 +15,20 @@
 
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>Nome</th>
                             <th>Gênero</th>
                             <th>Email</th>
-                            <th>Data de Cadastro</th>
+                            <th>Cadastro</th>
                             <th>Status</th>
                             <th>Cursos</th>
-                            <th>#</th>
+                            <th>C. Disponíveis</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         @if (Model != null && Model.Any())
                         {
@@ -61,20 +38,46 @@
                                     <td>@professor.Nome</td>
                                     <td>@professor.Genero</td>
                                     <td>@professor.Email</td>
-                                    <td>@professor.DataCadastro</td>
+                                    <td>@professor.DataCadastro.ToString("dd/MM/yyyy")</td>
                                     <td>@professor.Status</td>
                                     <td>
-                                        <a class="btn-sm btn-success text-decoration-none d-block text-center" asp-route-Id="@professor.ProfessorId" asp-controller="Professor" asp-action="CursosDoProfessor">Cursos</a>
+                                        <a class="btn-sm btn-primary text-decoration-none d-block text-center"
+                                           asp-route-Id="@professor.ProfessorId"
+                                           asp-controller="Professor"
+                                           asp-action="CursosDoProfessor">Cursos</a>
                                     </td>
                                     <td>
-                                        <a class="btn-sm btn-primary text-decoration-none " asp-route-Id="@professor.ProfessorId" asp-controller="Professor" asp-action="AtualizarProfessor">Editar</a>
-                                        <a class="btn-sm btn-danger text-decoration-none " asp-route-Id="@professor.ProfessorId" asp-controller="Professor" asp-action="RemoverProfessor">Remover</a>
+                                        <a class="btn-sm btn-primary text-decoration-none d-block"
+                                           asp-route-Id="@professor.ProfessorId"
+                                           asp-controller="Professor"
+                                           asp-action="CursosDisponiveis">Disponíveis</a>
+                                    </td>
+                                    <td class="text-center">
+                                        <a class="btn-sm btn-primary text-decoration-none me-1"
+                                           asp-route-Id="@professor.ProfessorId"
+                                           asp-controller="Professor"
+                                           asp-action="AtualizarProfessor">
+                                            <i class="far fa-edit"></i>
+                                        </a>
+                                        <a class="btn-sm btn-danger text-decoration-none m-1"
+                                           asp-route-Id="@professor.ProfessorId"
+                                           asp-controller="Professor"
+                                           asp-action="RemoverProfessor">
+                                            <i class="far fa-trash-alt"></i>
+                                        </a>
                                     </td>
                                 </tr>
                             }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center">Nenhum professor encontrado.</td>
+                            </tr>
                         }
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+</div>

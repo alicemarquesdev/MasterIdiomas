@@ -26,13 +26,13 @@ namespace MasterIdiomas.Models
         [Required(ErrorMessage = "Por favor, informe o número máximo de alunos para o curso.")]
         public int MaxAlunos { get; set; }
 
-        public StatusCursoEnum Status { get; set; }
+        public StatusCursoEnum? Status { get; set; }
 
         public DateTime? DataAtualizacao { get; set; }
 
-        public int ProfessorId { get; set; }
+        public int? ProfessorId { get; set; }
 
-        public ProfessorModel Professor { get; set; }
+        public ProfessorModel? Professor { get; set; }
 
         public virtual IList<AlunoCursoModel> AlunoCurso { get; set; } = new List<AlunoCursoModel>();
     }

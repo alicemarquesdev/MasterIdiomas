@@ -12,6 +12,8 @@ namespace MasterIdiomas.Repositorio.Interfaces
 
         Task<List<AlunoModel>> BuscarAlunosPorIdiomaAsync(CursoModel curso);
 
+        Task<List<AlunoModel>> BuscarAlunosNaoInscritosNoCurso(int cursoId);
+
         Task AddAlunoAoCursoAsync(int alunoId, int cursoId);
 
         Task RemoverAlunoDoCursoAsync(int alunoId, int cursoId);

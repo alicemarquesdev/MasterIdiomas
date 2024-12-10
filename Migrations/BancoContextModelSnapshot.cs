@@ -51,9 +51,8 @@ namespace MasterIdiomas.Migrations
                     b.Property<DateTime>("DataNascimento")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Genero")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Genero")
+                        .HasColumnType("int");
 
                     b.Property<string>("Nome")
                         .IsRequired()
@@ -95,10 +94,10 @@ namespace MasterIdiomas.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ProfessorId")
+                    b.Property<int?>("ProfessorId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Status")
+                    b.Property<int?>("Status")
                         .HasColumnType("int");
 
                     b.Property<string>("Turno")
@@ -120,7 +119,7 @@ namespace MasterIdiomas.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProfessorId"));
 
-                    b.Property<DateTime?>("DataCadastro")
+                    b.Property<DateTime>("DataCadastro")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("DataNascimento")
@@ -130,8 +129,8 @@ namespace MasterIdiomas.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Genero")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Genero")
+                        .HasColumnType("int");
 
                     b.Property<string>("Nome")
                         .IsRequired()

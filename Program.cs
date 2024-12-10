@@ -3,6 +3,7 @@ using MasterIdiomas.Helper;
 using MasterIdiomas.Repositorio;
 using MasterIdiomas.Repositorio.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace MasterIdiomas
 {
@@ -31,6 +32,7 @@ namespace MasterIdiomas
             {
                 o.Cookie.HttpOnly = true;
                 o.Cookie.IsEssential = true;
+                o.IOTimeout = TimeSpan.FromMinutes(50);
             });
 
             var app = builder.Build();

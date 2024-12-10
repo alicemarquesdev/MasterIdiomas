@@ -52,7 +52,14 @@
         }, 1000, 'easeInOutExpo');
         e.preventDefault();
     });
-})(jQuery); // End of use strict
 
-$('.close-alert').click(function () {
-    $(".alert").hide('hide');
+    $(document).querySelector("form").addEventListener("submit", function (e) {
+        var senha = document.querySelector("input[name='Senha']").value;
+        var senhaRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/;
+
+        if (!senhaRegex.test(senha)) {
+            e.preventDefault();
+            alert("A senha deve ter pelo menos 8 caracteres, incluindo: 1 letra maiúscula, 1 letra minúscula, 1 número e 1 caractere especial.");
+        }
+    });
+})(jQuery); // End of use strict

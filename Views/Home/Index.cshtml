@@ -1,46 +1,20 @@
 ﻿@model List<CursoModel>
 @{
     ViewData["Title"] = "Visao Geral";
-
 }
 
-<div class="container mb-xl-4">
-    <h2 class="mt-4 mb-xl-3">
+<!-- Espaço antes do h2 -->
+<div class="container mt-5 mb-5">
+    <h2 class="mb-5">
         Olá, @ViewBag.Usuario. Bem-vindo à Master Idiomas!
     </h2>
-
-    @if (TempData["MensagemSucesso"] != null)
-    {
-        <div class="alert alert-primary d-flex align-items-center" role="alert">
-            <div>
-                @TempData["MensagemSucesso"]
-            </div>
-
-            <button type="button" class="btn btn-primary btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
-
-        </div>
-    }
-
-    @if (TempData["MensagemErro"] != null)
-    {
-        <div class="alert alert-danger d-flex align-items-center" role="alert">
-            <div>
-                @TempData["MensagemErro"]
-            </div>
-            <button type="button" class="btn btn-danger btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
-
-        </div>
-    }
-
 </div>
 
-
-<div class="container mt-6 mb-6">
-
+<!-- Espaço entre o h2 e os cards -->
+<div class="container mt-5 mb-5">
     <div class="row">
-
-        <!-- Earnings (Monthly) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
+        <!-- Cards -->
+        <div class="col-xl-3 col-md-6 mb-5">
             <div class="card border-left-primary shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
@@ -50,16 +24,13 @@
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.TotalAlunos</div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas  fa-list fa-2x text-gray-300"></i>
-                        </div>
+                        <div class="col-auto"><i class="fas fa-user-graduate fa-2x text-gray-300"></i></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Earnings (Monthly) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-xl-3 col-md-6 mb-5">
             <div class="card border-left-success shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
@@ -69,16 +40,13 @@
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.TotalCursos</div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas  fa-list fa-2x text-gray-300"></i>
-                        </div>
+                        <div class="col-auto"><i class="fas fa-book-open fa-2x text-gray-300"></i></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Earnings (Monthly) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-xl-3 col-md-6 mb-5">
             <div class="card border-left-info shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
@@ -86,22 +54,15 @@
                             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                                 TOTAL DE PROFESSORES
                             </div>
-                            <div class="row no-gutters align-items-center">
-                                <div class="col-auto">
-                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">@ViewBag.TotalProfessores</div>
-                                </div>
-                               
-                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.TotalProfessores</div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-list fa-2x text-gray-300"></i>
-                        </div>
+                        <div class="col-auto"><i class="fas fa-chalkboard-teacher fa-2x text-gray-300"></i></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-xl-3 col-md-6 mb-5">
             <div class="card border-left-warning shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
@@ -111,61 +72,61 @@
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.ToTalIdiomas</div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-list fa-2x text-gray-300"></i>
-                        </div>
+                        <div class="col-auto"><i class="fas fa-globe fa-2x text-gray-300"></i></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-
-
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Lista Geral de Cursos</h6>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>Curso</th>
-                            <th>Turno</th>
-                            <th>Nível</th>
-                            <th>Data de Início</th>
-                            <th>Status</th>
-                            <th>Professor</th>
-                            <th>Alunos</th>
-                            <th>Máx. Alunos</th>
-
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model != null && Model.Any())
-                        {
-                            foreach (var curso in Model)
+    <!-- Espaço entre os cards e a tabela -->
+    <div class="mt-3">
+        <div class="card shadow mb-5">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Lista Geral de Cursos</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Curso</th>
+                                <th>Turno</th>
+                                <th>Nível</th>
+                                <th>Data de Início</th>
+                                <th>Status</th>
+                                <th>Professor</th>
+                                <th>Alunos</th>
+                                <th>Máx. Alunos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                foreach (var curso in Model)
+                                {
+                                    <tr>
+                                        <td>@curso.Idioma</td>
+                                        <td>@curso.Turno</td>
+                                        <td>@curso.Nivel</td>
+                                        <td>@curso.DataInicio.ToString("dd/MM/yyyy")</td>
+                                        <td>@curso.Status</td>
+                                        <td>@(curso.Professor != null ? curso.Professor.Nome : "-")</td>
+                                        <td>@ViewBag.TotalAlunosPorCurso[curso.CursoId]</td>
+                                        <td>@curso.MaxAlunos</td>
+                                    </tr>
+                                }
+                            }
+                            else
                             {
                                 <tr>
-                                    <td>@curso.Idioma</td>
-                                    <td>@curso.Turno</td>
-                                    <td>@curso.Nivel</td>
-                                    <td>@curso.DataInicio.ToString("dd/MM/yyyy")</td>
-                                    <td>@curso.Status</td>
-                                    <td>@curso.Professor.Nome</td>
-                                    <td>@ViewBag.TotalDeAlunosCurso</td>
-                                    <td>@curso.MaxAlunos</td>
+                                    <td colspan="8">Nenhum curso encontrado.</td>
                                 </tr>
                             }
-                        }
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-
 </div>
-
-
-   

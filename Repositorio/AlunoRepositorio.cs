@@ -3,6 +3,7 @@ using MasterIdiomas.Enums;
 using MasterIdiomas.Models;
 using MasterIdiomas.Repositorio.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace MasterIdiomas.Repositorio
 {
@@ -17,79 +18,136 @@ namespace MasterIdiomas.Repositorio
 
         public async Task<List<AlunoModel>> BuscarTodosAlunosAsync()
         {
-            return await _context.Alunos.Include(a => a.AlunoCurso).ThenInclude(a => a.Curso).OrderBy(n => n.Nome).ToListAsync();
+            try
+            {
+                // Retorna todos os alunos com seus cursos relacionados
+                return await _context.Alunos
+                    .Include(a => a.AlunoCurso)
+                    .ThenInclude(a => a.Curso)
+                    .OrderBy(n => n.Nome)
+                    .ToListAsync();
+            }
+            catch (Exception)
+            {
+                throw new Exception("Erro ao buscar todos os alunos. Tente novamente mais tarde.");
+            }
         }
 
         public async Task<AlunoModel> BuscarAlunoPorIdAsync(int id)
         {
-            return await _context.Alunos.FirstOrDefaultAsync(x => x.AlunoId == id);
+            try
+            {
+                // Retorna um aluno pelo seu ID
+                return await _context.Alunos
+                    .FirstOrDefaultAsync(x => x.AlunoId == id);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Erro ao buscar o aluno. Tente novamente mais tarde.");
+            }
         }
 
-        public async Task<AlunoModel> BuscarAlunoExistenteAsync(string nome)
+        public async Task<AlunoModel> BuscarAlunoExistenteAsync(string nome, DateTime dataNascimento)
         {
-            return await _context.Alunos.FirstOrDefaultAsync(x => x.Nome == nome);
+            try
+            {
+                // Verifica se o aluno existe pelo nome e data de nascimento
+                return await _context.Alunos
+                    .FirstOrDefaultAsync(x => x.Nome == nome && x.DataNascimento == dataNascimento);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao buscar o aluno existente. Tente novamente mais tarde.", ex);
+            }
         }
 
         public int TotalAlunos()
         {
-            return _context.Alunos.Count();
+            try
+            {
+                // Retorna o total de alunos cadastrados
+                return _context.Alunos.Count();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao contar o total de alunos. Tente novamente mais tarde.", ex);
+            }
         }
 
         public async Task AddAlunoAsync(AlunoModel aluno)
         {
-            aluno.DataCadastro = DateTime.Now;
-            aluno.Status = StatusEnum.Ativo;
-            await _context.Alunos.AddAsync(aluno);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task AddAlunoExistenteCursoExistenteAync(int alunoId, int cursoId)
-        {
-            var alunoExistente = _context.Alunos.Find(alunoId);
-            var cursoExistente = _context.Cursos.Find(cursoId);
-
-            if ((cursoExistente == null) || (alunoExistente == null))
-                throw new Exception("Não conseguimos encontrar os registros.");
-
-            var inscricaoExistente = _context.AlunoCurso.FirstOrDefault(ac => ac.AlunoId == alunoId && ac.CursoId == cursoId);
-            if (inscricaoExistente != null)
-                throw new Exception("O aluno já está inscrito neste curso.");
-
-            // Criar uma nova inscrição
-            var novaInscricao = new AlunoCursoModel
+            try
             {
-                AlunoId = alunoId,
-                CursoId = cursoId
-            };
+                var alunoExistente = await BuscarAlunoExistenteAsync(aluno.Nome, aluno.DataNascimento);
+                if (alunoExistente != null)
+                {
+                    throw new Exception($"O aluno {aluno.Nome} com data de nascimento {aluno.DataNascimento} já está registrado.");
+                }
 
-            // Adicionar ao contexto e salvar as mudanças
-            _context.AlunoCurso.Add(novaInscricao);
-            await _context.SaveChangesAsync();
+                // Adiciona um novo aluno
+                TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
+                aluno.Nome = textInfo.ToTitleCase(aluno.Nome.ToLower());
+                aluno.DataCadastro = DateTime.Now;
+                aluno.Status = StatusEnum.Ativo;
+
+                await _context.Alunos.AddAsync(aluno);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{ex}");
+            }
         }
 
         public async Task AtualizarAlunoAsync(AlunoModel aluno)
         {
-            AlunoModel alunoDB = await BuscarAlunoPorIdAsync(aluno.AlunoId);
+            try
+            {
+                // Atualiza os dados de um aluno
+                AlunoModel alunoDB = await BuscarAlunoPorIdAsync(aluno.AlunoId);
 
-            if (alunoDB == null) throw new Exception("Não foi possível encontrar os dados do aluno para atualização.");
+                if (alunoDB == null)
+                    throw new Exception("Aluno não encontrado para atualização.");
 
-            alunoDB.Nome = aluno.Nome;
-            alunoDB.DataNascimento = aluno.DataNascimento;
-            alunoDB.Status = aluno.Status;
-            alunoDB.Genero = aluno.Genero;
+                var alunoExistente = await BuscarAlunoExistenteAsync(aluno.Nome, aluno.DataNascimento);
+                if (alunoExistente != null)
+                {
+                    throw new Exception($"O aluno {aluno.Nome} com data de nascimento {aluno.DataNascimento} já está registrado.");
+                }
 
-            _context.Update(alunoDB);
-            await _context.SaveChangesAsync();
+                TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
+                alunoDB.Nome = textInfo.ToTitleCase(aluno.Nome.ToLower());
+                alunoDB.DataNascimento = aluno.DataNascimento;
+                alunoDB.Status = aluno.Status;
+                alunoDB.Genero = aluno.Genero;
+
+                _context.Update(alunoDB);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{ex}");
+            }
         }
 
         public async Task<bool> RemoverAlunoAsync(int id)
         {
-            AlunoModel alunoDb = await BuscarAlunoPorIdAsync(id);
-            if (alunoDb == null) throw new Exception("Registro não encontrado. Verifique se o aluno existe e tente novamente");
+            try
+            {
+                // Remove um aluno pelo ID
+                AlunoModel alunoDb = await BuscarAlunoPorIdAsync(id);
 
-            _context.Alunos.Remove(alunoDb);
-            await _context.SaveChangesAsync();
-            return true;
+                if (alunoDb == null)
+                    throw new Exception("Aluno não encontrado para remoção.");
+
+                _context.Alunos.Remove(alunoDb);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{ex}");
+            }
         }
     }
 }

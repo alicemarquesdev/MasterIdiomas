@@ -3,32 +3,15 @@
     ViewData["Title"] = "Alunos do Curso";
 }
 
-
 <div class="container-fluid px-4">
-    <h1 class="mt-4">Alunos do Curso</h1>
+    <ol class="breadcrumb mt-1 bg-transparent">
+        <li class="breadcrumb-item">
+            <a asp-controller="Curso" asp-action="Index" class="text-decoration-none">Cursos</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Alunos do Curso</li>
+    </ol>
 
-    @if (TempData["MensagemSucesso"] != null)
-    {
-        <div class="alert alert-primary d-flex align-items-center" role="alert">
-            <div>
-                @TempData["MensagemSucesso"]
-            </div>
-
-            <button type="button" class="btn btn-primary btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
-
-        </div>
-    }
-
-    @if (TempData["MensagemErro"] != null)
-    {
-        <div class="alert alert-danger d-flex align-items-center" role="alert">
-            <div>
-                @TempData["MensagemErro"]
-            </div>
-            <button type="button" class="btn btn-danger btn-sm close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close">X</button>
-
-        </div>
-    }
+    <h1 class="mt-2 mb-4">Alunos do Curso</h1>
 
     <div class="card mb-3">
         <div class="card-body">
@@ -39,39 +22,47 @@
     <div class="card shadow mb-4 mt-4">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h6 class="m-0 font-weight-bold text-primary">Alunos Matriculados no Curso</h6>
+            <a class="btn btn-primary" asp-controller="Curso" asp-action="AddAlunoAoCurso" asp-route-Id="@ViewBag.CursoId">Adicionar Alunos Ao Curso</a>
         </div>
+    
 
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>Nome</th>
                             <th>Data-Nasc.</th>
                             <th>Gênero</th>
                             <th>Status</th>
-                            <th>#</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @if (Model != null && Model.Any())
+                        @if (Model?.Any() == true)
                         {
                             foreach (var aluno in Model)
                             {
                                 <tr>
                                     <td>@aluno.Nome</td>
-                                    <td>@aluno.DataNascimento</td>
+                                    <td>@aluno.DataNascimento.ToString("dd/MM/yyyy")</td>
                                     <td>@aluno.Genero</td>
                                     <td>@aluno.Status</td>
                                     <td>
-                                        <form asp-controller="Aluno" asp-action="RemoverAlunoDoCurso" method="post">
-                                            <input type="hidden" name="cursoId" value="@ViewBag.CursoId" />
-                                            <input type="hidden" name="alunoId" value="@aluno.AlunoId" />
-                                            <button type="submit" class="btn-sm btn-danger">Remover Curso</button>
+                                        <form asp-controller="AlunoCurso" asp-action="RemoverAlunoDoCurso" method="post">
+                                            <input type="hidden" name="CursoId" value="@ViewBag.CursoId" />
+                                            <input type="hidden" name="AlunoId" value="@aluno.AlunoId" />
+                                            <button type="submit" class="btn btn-sm btn-danger">Remover do Curso</button>
                                         </form>
                                     </td>
                                 </tr>
                             }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center">Nenhum aluno matriculado no curso.</td>
+                            </tr>
                         }
                     </tbody>
                 </table>

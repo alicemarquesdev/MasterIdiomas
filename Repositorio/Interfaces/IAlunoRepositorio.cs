@@ -8,7 +8,7 @@ namespace MasterIdiomas.Repositorio.Interfaces
 
         Task<AlunoModel> BuscarAlunoPorIdAsync(int id);
 
-        Task<AlunoModel> BuscarAlunoExistenteAsync(string nome);
+        Task<AlunoModel> BuscarAlunoExistenteAsync(string nome, DateTime dataDascimento);
 
         Task AddAlunoAsync(AlunoModel aluno);
 

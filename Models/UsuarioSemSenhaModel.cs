@@ -6,11 +6,11 @@ namespace MasterIdiomas.Models
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Digite o seu nome.")]
+        [Required(ErrorMessage = "Por favor, insira o seu nome.")]
         public string Nome { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Digite o seu email.")]
-        [EmailAddress(ErrorMessage = "O e-mail informado não é valido!")]
+        [Required(ErrorMessage = "Por favor, insira o seu e-mail.")]
+        [EmailAddress(ErrorMessage = "O e-mail informado não é válido.")]
         public string Email { get; set; } = string.Empty;
     }
 }

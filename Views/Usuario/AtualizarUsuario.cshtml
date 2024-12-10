@@ -1,41 +1,35 @@
-﻿@model UsuarioModel
+﻿@model UsuarioSemSenhaModel
+
 @{
     ViewData["Title"] = "Editar Dados";
 }
 
-
 <div class="container-fluid px-4">
-    <h1 class="mt-4">Editar Dados</h1>
-    
-    <div class="container justify-content-end">
-        <a class="btn btn-danger w-25 " asp-controller="Usuario" asp-action="AlterarSenha" role="button">Alterar Senha</a>
-    </div>
+    <ol class="breadcrumb mt-1 bg-transparent">
+        <li class="breadcrumb-item">
+            <a asp-controller="Home" asp-action="Index" class="text-decoration-none">Visão Geral</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Editar Dados</li>
+    </ol>
+
+    <h1 class="mt-4 mb-4">Editar Dados</h1>
 
     <form asp-controller="Usuario" asp-action="AtualizarUsuario" method="post">
+        <input type="hidden" asp-for="Id" />
 
-        <!-- Campo oculto para o Id -->
-        <input type="hidden" asp-for="UsuarioId" />
-
-        <!-- Nome -->
         <div class="mb-3">
             <label for="Nome" class="form-label">Nome</label>
-            <input type="text" class="form-control" asp-for="Nome">
-            <span class="text-danger">
-                @Html.ValidationMessageFor(x => x.Nome)
-            </span>
+            <input type="text" class="form-control" asp-for="Nome" />
+            <span class="text-danger">@Html.ValidationMessageFor(x => x.Nome)</span>
         </div>
 
-        <!-- Email -->
-        <div class="mb-3">
+        <div class="mb-4">
             <label for="Email" class="form-label">Email</label>
-            <input type="email" class="form-control" asp-for="Email" maxlength="100">
-            <span class="text-danger">
-                @Html.ValidationMessageFor(x => x.Email)
-            </span>
+            <input type="email" class="form-control" asp-for="Email" maxlength="100" />
+            <span class="text-danger">@Html.ValidationMessageFor(x => x.Email)</span>
         </div>
 
-        <!-- Botões -->
         <button type="submit" class="btn btn-primary w-100 mb-1">Atualizar Dados</button>
-        <a class="btn btn-secondary d-block" asp-controller="Home" asp-action="Index" role="button">Voltar</a>
+        <a class="btn btn-secondary d-block mb-1" asp-controller="Home" asp-action="Index" role="button">Voltar</a>
     </form>
 </div>
