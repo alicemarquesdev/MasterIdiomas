@@ -1,12 +1,9 @@
 ﻿namespace MasterIdiomas.Enums
 {
-    // Enum que define o status de um item
+    // Define uma enumeração para representar o status de professor e aluno
     public enum StatusEnum
     {
-        // Status inativo
-        Inativo = 0,
-
-        // Status ativo
-        Ativo = 1
+        Inativo = 0, // Status inativo
+        Ativo = 1    // Status ativo
     }
 }

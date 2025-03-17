@@ -7,43 +7,30 @@ using System.Globalization;
 
 namespace MasterIdiomas.Repositorio
 {
+    // Classe responsável pelas operações de acesso ao banco de dados relacionadas aos professores, incluindo verificação, adição, atualização e remoção de professores
+    // - VerificarProfessorExistenteAsync(string email, string nome) - verifica se um professor já está registrado com o mesmo e-mail e nome
+    // - BuscarProfessorPorIdAsync(int id) - busca um professor pelo ID, incluindo a quantidade de cursos associados
+    // - BuscarTodosProfessoresAsync() - busca todos os professores, incluindo a quantidade de cursos associados
+    // - AddProfessorAsync(ProfessorModel professor) - adiciona um novo professor, realizando verificações de duplicidade e definindo valores padrão
+    // - AtualizarProfessorAsync(ProfessorModel professor) - atualiza os dados de um professor, verificando a existência e realizando ajustes conforme necessário
+    // - RemoverProfessorAsync(ProfessorModel professor) - remove um professor, verificando se ele está associado a cursos antes de removê-lo
+    // - TotalProfessores() - retorna a quantidade total de professores cadastrados
     public class ProfessorRepositorio : IProfessorRepositorio
     {
         private readonly BancoContext _context;
-        private readonly ICursoRepositorio _cursoRepositorio;
 
-        public ProfessorRepositorio(BancoContext context,
-                                    ICursoRepositorio cursoRepositorio)
+        public ProfessorRepositorio(BancoContext context)
         {
             _context = context;
-            _cursoRepositorio = cursoRepositorio;
         }
 
-        // Buscar todos os cursos associados a um professor
-        public async Task<List<CursoModel>> BuscarCursosDoProfessorAsync(int professorId)
-        {
-            try
-            {
-                return await _context.Cursos
-                    .Include(c => c.Professor)
-                    .Where(c => c.ProfessorId == professorId)
-                    .OrderBy(a => a.Idioma)
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                // Mensagem de erro amigável
-                throw new Exception("Ocorreu um erro ao buscar os cursos do professor. Tente novamente mais tarde.", ex);
-            }
-        }
-
-        // Verificar se o professor já existe
-        public async Task<ProfessorModel> BuscarProfessorExistenteAsync(string email, string nome, int professorIdIgnorar)
+        // Verificar se o professor já existe com base em email e nome
+        public async Task<bool> VerificarProfessorExistenteAsync(string email, string nome)
         {
             try
             {
                 return await _context.Professores
-                    .FirstOrDefaultAsync(x => x.Email == email && x.Nome == nome && x.ProfessorId != professorIdIgnorar);
+                    .Select(x => x.Email == email && x.Nome == nome).FirstOrDefaultAsync();
             }
             catch (Exception ex)
             {
@@ -51,13 +38,27 @@ namespace MasterIdiomas.Repositorio
             }
         }
 
-        // Buscar professor por ID
-        public async Task<ProfessorModel> BuscarProfessorPorIdAsync(int id)
+        // Buscar professor por ID, incluindo a quantidade de cursos
+        public async Task<ProfessorModel?> BuscarProfessorPorIdAsync(int id)
         {
             try
             {
-                return await _context.Professores
+                if (id <= 0)
+                {
+                    throw new ArgumentException("ID inválido.");
+                }
+
+                // Buscar o professor com seus cursos
+                var professor = await _context.Professores
                     .FirstOrDefaultAsync(x => x.ProfessorId == id);
+
+                if (professor != null)
+                {
+                    // Calcula a quantidade de cursos
+                    professor.QuantidadeCursos = professor.Cursos?.Count() ?? 0;
+                }
+
+                return professor;
             }
             catch (Exception ex)
             {
@@ -65,29 +66,28 @@ namespace MasterIdiomas.Repositorio
             }
         }
 
-        // Buscar todos os professores
+        // Buscar todos os professores, incluindo a quantidade de cursos
         public async Task<List<ProfessorModel>> BuscarTodosProfessoresAsync()
         {
             try
             {
-                return await _context.Professores.OrderBy(p => p.Nome).ToListAsync();
+                // Buscar todos os professores e seus cursos
+                var professores = await _context.Professores
+                    .Include(p => p.Cursos)  // Inclui os cursos do professor
+                    .OrderBy(p => p.Nome)
+                    .ToListAsync();
+
+                // Adiciona a quantidade de cursos para cada professor
+                foreach (var professor in professores)
+                {
+                    professor.QuantidadeCursos = professor.Cursos?.Count() ?? 0;
+                }
+
+                return professores;
             }
             catch (Exception ex)
             {
                 throw new Exception("Ocorreu um erro ao listar os professores. Tente novamente mais tarde.", ex);
-            }
-        }
-
-        // Contagem total de professores
-        public int TotalProfessores()
-        {
-            try
-            {
-                return _context.Professores.Count();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Ocorreu um erro ao contar os professores. Tente novamente mais tarde.", ex);
             }
         }
 
@@ -96,14 +96,6 @@ namespace MasterIdiomas.Repositorio
         {
             try
             {
-                // Verificar se o professor já existe com base no e-mail e nome
-                var professorExistente = await BuscarProfessorExistenteAsync(professor.Email, professor.Nome, professor.ProfessorId);
-
-                if (professorExistente != null)
-                {
-                    throw new Exception("Já existe um professor registrado com este e-mail.");
-                }
-
                 // Definir valores padrão para campos obrigatórios
                 TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
                 professor.Nome = textInfo.ToTitleCase(professor.Nome.ToLower());
@@ -112,8 +104,13 @@ namespace MasterIdiomas.Repositorio
                 professor.Status = StatusEnum.Ativo;
 
                 // Adicionar o professor ao banco de dados
-                await _context.Professores.AddAsync(professor);
-                await _context.SaveChangesAsync();
+                _context.Professores.Add(professor);
+                var result = await _context.SaveChangesAsync(); // Salva as alterações
+
+                if (result <= 0)
+                {
+                    throw new Exception("Nenhuma alteração no banco de dados."); // Garante que a operação foi bem-sucedida
+                }
             }
             catch (Exception ex)
             {
@@ -124,55 +121,29 @@ namespace MasterIdiomas.Repositorio
         // Atualizar dados de um professor
         public async Task AtualizarProfessorAsync(ProfessorModel professor)
         {
-            if (professor == null)
-            {
-                throw new ArgumentNullException(nameof(professor), "Os dados do professor não foram fornecidos.");
-            }
-
             try
             {
-                // Buscar professor no banco
-                var professorDB = await BuscarProfessorPorIdAsync(professor.ProfessorId);
-
-                if (professorDB == null)
+                var professorDb = await BuscarProfessorPorIdAsync(professor.ProfessorId);
+                if(professorDb == null)
                 {
-                    throw new KeyNotFoundException("Professor não encontrado para atualização.");
+                    throw new Exception("Professor não encontrado no banco de dados");
                 }
-
-                // Verificar se o professor já existe com base no e-mail e nome
-                var professorExistente = await BuscarProfessorExistenteAsync(professor.Email, professor.Nome, professor.ProfessorId);
-
-                if (professorExistente != null)
-                {
-                    throw new Exception("Já existe um professor registrado com este e-mail.");
-                }
-
                 // Atualizar os dados básicos do professor
                 TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
-                professorDB.Nome = textInfo.ToTitleCase(professor.Nome.ToLower());
-                professorDB.Email = professor.Email.ToLower();
-                professorDB.Genero = professor.Genero;
-                professorDB.Status = professor.Status;
-                professorDB.DataNascimento = professor.DataNascimento;
+                professorDb.Nome = textInfo.ToTitleCase(professor.Nome.ToLower());
+                professorDb.Email = professor.Email.ToLower();
+                professorDb.Genero = professor.Genero;
+                professorDb.Status = professor.Status;
+                professorDb.DataNascimento = professor.DataNascimento;
 
-                // Verificar status do professor
-                if (professorDB.Status == StatusEnum.Inativo)
+                          // Salvar as alterações
+                _context.Professores.Update(professorDb);
+                var result = await _context.SaveChangesAsync(); // Salva as alterações
+
+                if (result <= 0)
                 {
-                    // Buscar cursos associados ao professor
-                    List<CursoModel> cursosDoProfessor = await BuscarCursosDoProfessorAsync(professor.ProfessorId);
-
-                    if (cursosDoProfessor != null && cursosDoProfessor.Any())
-                    {
-                        foreach (var curso in cursosDoProfessor)
-                        {
-                            await RemoverProfessorDoCursoAsync(professor.ProfessorId, curso.CursoId);
-                        }
-                    }
+                    throw new Exception("Nenhuma alteração no banco de dados."); // Garante que a operação foi bem-sucedida
                 }
-
-                // Salvar as alterações
-                _context.Professores.Update(professorDB);
-                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -180,23 +151,21 @@ namespace MasterIdiomas.Repositorio
             }
         }
 
-        // Remover um professor
+        // Remover um professor se não estiver associado em nenhum curso.
         public async Task<bool> RemoverProfessorAsync(int id)
         {
             try
             {
-                ProfessorModel professor = await BuscarProfessorPorIdAsync(id);
-
-                if (professor == null)
+                if (id <= 0)
                 {
-                    throw new Exception("Professor não encontrado para remoção.");
+                    throw new ArgumentException("ID inválido.");
                 }
 
-                List<CursoModel> cursos = await BuscarCursosDoProfessorAsync(professor.ProfessorId);
-
-                if (cursos != null && cursos.Any())
+                // Buscar o professor pelo ID
+                var professor = await _context.Professores.FindAsync(id);
+                if (professor == null)
                 {
-                    throw new Exception("O professor está associado a cursos e não pode ser removido.");
+                    throw new Exception("Professor não encontrado.");
                 }
 
                 // Remover professor do banco de dados
@@ -205,74 +174,22 @@ namespace MasterIdiomas.Repositorio
 
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                throw new Exception("Erro ao remover o professor.", ex);
             }
         }
 
-        public async Task AddProfessorAoCursoAsync(int professorId, int cursoId)
-        {
-            const int maxCursosPorProfessor = 3;
-
-            try
-            {
-                // Buscar curso e professor
-                var curso = await _cursoRepositorio.BuscarCursoPorIdAsync(cursoId);
-                if (curso == null)
-                {
-                    throw new Exception($"O curso com ID {cursoId} não foi encontrado.");
-                }
-
-                var professor = await BuscarProfessorPorIdAsync(professorId);
-                if (professor == null)
-                {
-                    throw new Exception($"O professor com ID {professorId} não foi encontrado.");
-                }
-
-                // Validar se o curso já está vinculado a outro professor
-                if (curso.ProfessorId != null)
-                {
-                    throw new Exception($"O curso '{curso.Idioma}' já está associado ao professor '{curso.Professor?.Nome ?? "desconhecido"}'.");
-                }
-
-                // Validar se o professor atingiu o limite de cursos
-                var cursosDoProfessor = await BuscarCursosDoProfessorAsync(professorId);
-                if (cursosDoProfessor.Count() >= maxCursosPorProfessor)
-                {
-                    throw new Exception($"O professor '{professor.Nome}' já está associado ao número máximo de cursos permitidos ({maxCursosPorProfessor}).");
-                }
-
-                // Associar professor ao curso
-                curso.ProfessorId = professorId;
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Erro ao adicionar o professor ao curso: {ex.Message}", ex);
-            }
-        }
-
-        // Remover um professor de um curso
-        public async Task RemoverProfessorDoCursoAsync(int professorId, int cursoId)
+        // Contagem total de professores no banco de dados
+        public int TotalProfessores()
         {
             try
             {
-                var curso = await _cursoRepositorio.BuscarCursoPorIdAsync(cursoId);
-                var professor = await BuscarProfessorPorIdAsync(professorId);
-
-                if (curso == null || professor == null)
-                {
-                    throw new Exception("Curso ou professor não encontrado. Verifique os dados e tente novamente.");
-                }
-
-                curso.ProfessorId = null;
-                _context.Cursos.Update(curso);
-                await _context.SaveChangesAsync();
+                return _context.Professores.Count();
             }
             catch (Exception ex)
             {
-                throw new Exception("Erro ao remover o professor do curso. Tente novamente.", ex);
+                throw new Exception("Ocorreu um erro ao contar os professores. Tente novamente mais tarde.", ex);
             }
         }
     }

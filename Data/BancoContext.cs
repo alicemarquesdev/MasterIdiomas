@@ -30,7 +30,7 @@ namespace MasterIdiomas.Data
                     .WithMany(p => p.Cursos)   // Um professor tem muitos cursos
                     .HasForeignKey(c => c.ProfessorId) // Chave estrangeira para ProfessorId
                     .IsRequired(false)          // A relação é opcional
-                    .OnDelete(DeleteBehavior.Restrict);  // Não permite deleção em cascata
+                    .OnDelete(DeleteBehavior.Restrict);  // Não permite deleção em cascata               
 
                 // Configuração da chave composta entre AlunoCurso
                 modelBuilder.Entity<AlunoCursoModel>()
@@ -40,12 +40,15 @@ namespace MasterIdiomas.Data
                 modelBuilder.Entity<AlunoCursoModel>()
                     .HasOne(ac => ac.Aluno)  // Cada AlunoCurso está relacionado a um Aluno
                     .WithMany(a => a.AlunoCurso) // Cada Aluno pode ter muitos AlunoCursos
-                    .HasForeignKey(ac => ac.AlunoId); // Chave estrangeira para AlunoId
+                    .HasForeignKey(ac => ac.AlunoId) // Chave estrangeira para AlunoId
+                    .OnDelete(DeleteBehavior.Cascade);  // Configuração para excluir registros relacionados ao Aluno
+
 
                 modelBuilder.Entity<AlunoCursoModel>()
                     .HasOne(ac => ac.Curso)  // Cada AlunoCurso está relacionado a um Curso
                     .WithMany(c => c.AlunoCurso) // Cada Curso pode ter muitos AlunoCursos
-                    .HasForeignKey(ac => ac.CursoId); // Chave estrangeira para CursoId
+                    .HasForeignKey(ac => ac.CursoId) // Chave estrangeira para CursoId
+                    .OnDelete(DeleteBehavior.Cascade);  // Configuração para excluir registros relacionados ao Curso
 
                 base.OnModelCreating(modelBuilder);  // Chama a implementação base para garantir que todas as configurações sejam aplicadas
             }

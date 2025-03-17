@@ -1,5 +1,7 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
+
+<!-- Layout de início, utilizado para realizar login, criar usuário e redefinir senha -->
 
 <head>
     <meta charset="utf-8">
@@ -20,21 +22,20 @@
 
 <body>
     <main class="pb-3">
-        @if (TempData["MensagemSucesso"] != null)
+
+        @{
+            var mensagem = TempData["MensagemSucesso"] ?? TempData["MensagemErro"];
+            var classe = TempData["MensagemSucesso"] != null ? "alert-primary" : "alert-danger";
+        }
+
+        @if (mensagem != null)
         {
-            <div class="alert alert-primary alert-dismissible fade show d-flex align-items-center" role="alert">
-                <button type="button" class="btn-close btn-close-white close-alert mr-4" data-bs-dismiss="alert" aria-label="Close"></button>
-                <div class="me-auto">@TempData["MensagemSucesso"]</div>
+            <div class="container alert @classe alert-dismissible fade show d-flex align-items-center" role="alert">
+                <div class="me-auto">@mensagem</div>
+                <button type="button" class="btn-close btn-close-dark close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         }
 
-        @if (TempData["MensagemErro"] != null)
-        {
-            <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
-                <button type="button" class="btn-close btn-close-white close-alert mr-4" data-bs-dismiss="alert" aria-label="Close"></button>
-                <div class="me-auto">@TempData["MensagemErro"]</div>
-            </div>
-        }
         @RenderBody()
     </main>
 
@@ -54,16 +55,8 @@
     <!-- Custom scripts for all pages -->
     <script src="~/js/sb-admin-2.min.js"></script>
 
-    <!-- Fechar alertas de MensagemSucesso e MensagemErro -->
-    <script>
-        $(document).ready(function () {
-            $('.close-alert').on('click', function () {
-                $(this).closest('.alert').fadeOut(function () {
-                    $(this).remove(); // Remove o alerta completamente da página
-                });
-            });
-        });
-    </script>
+    <!-- Seção para scripts adicionais -->
+    @RenderSection("Scripts", required: false)
 
 </body>
 

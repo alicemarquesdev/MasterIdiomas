@@ -1,97 +1,108 @@
 ﻿using MasterIdiomas.Filters;
+using MasterIdiomas.Repositorio;
 using MasterIdiomas.Repositorio.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MasterIdiomas.Controllers
 {
-    [UsuarioLogado]
+    // AlunoCursoController é responsável por gerenciar a associação entre alunos e cursos no sistema.
+    // Ele oferece métodos para adicionar ou remover um aluno de um curso.
+
+    // Métodos:
+
+    // POST AddAlunoAoCurso(int alunoId, int cursoId) - Adiciona um aluno a um curso,
+    // verificando se os IDs são válidos e realizando a operação através do repositório.
+
+    // POST RemoverAlunoDoCurso(int alunoId, int cursoId) - Remove um aluno de um curso,
+    // verificando se os IDs são válidos e realizando a operação através do repositório.
+
+    [UsuarioLogado] // Garante que o usuário esteja logado para acessar
     public class AlunoCursoController : Controller
     {
         private readonly IAlunoCursoRepositorio _alunoCursoRepositorio;
         private readonly ICursoRepositorio _cursoRepositorio;
         private readonly IAlunoRepositorio _alunoRepositorio;
+        private readonly ILogger<AlunoCursoController> _logger;
 
-        // Construtor da controller, injetando as dependências
-        public AlunoCursoController(IAlunoCursoRepositorio alunoCursoRepositorio,
+        // Construtor que injeta as dependências necessárias
+        public AlunoCursoController(IAlunoCursoRepositorio alunoCursoRepositorio, 
                                     ICursoRepositorio cursoRepositorio,
-                                    IAlunoRepositorio alunoRepositorio)
+                                    IAlunoRepositorio alunoRepositorio,
+                                    ILogger<AlunoCursoController> logger)
         {
-            _alunoCursoRepositorio = alunoCursoRepositorio;
-            _cursoRepositorio = cursoRepositorio;
-            _alunoRepositorio = alunoRepositorio;
+            // Inicializa as dependências com a injeção de dependência fornecida ao controlador
+            _alunoCursoRepositorio = alunoCursoRepositorio ?? throw new ArgumentNullException(nameof(alunoCursoRepositorio));
+            _cursoRepositorio = cursoRepositorio ?? throw new ArgumentNullException(nameof(cursoRepositorio)); // Verifica se o repositório de Curso foi passado
+            _alunoRepositorio = alunoRepositorio ?? throw new ArgumentNullException(nameof(alunoRepositorio)); // Verifica se o repositório de Professor foi passado
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        // Ação para adicionar um aluno a um curso
+        // Método para adicionar um aluno a um curso
         [HttpPost]
         public async Task<IActionResult> AddAlunoAoCurso(int alunoId, int cursoId)
         {
             try
             {
-                var urlAnterior = Request.Headers["Referer"].ToString();
-
-                // Verificando se o aluno e o curso existem
-                var alunoExiste = await _alunoRepositorio.BuscarAlunoPorIdAsync(alunoId);
-                var cursoExiste = await _cursoRepositorio.BuscarCursoPorIdAsync(cursoId);
-
-                // Se aluno ou curso não forem encontrados, redireciona para a página de cursos disponíveis
-                if (alunoExiste == null || cursoExiste == null)
+                // Valida os IDs fornecidos
+                if (alunoId <= 0 || cursoId <= 0)
                 {
-                    TempData["MensagemErro"] = "Aluno/Curso não encontrado!";
-                    return Redirect(urlAnterior);
+                    throw new ArgumentException("Id de aluno/curso inválido.");
+                }
+                // Verifica se o aluno e o curso existem no banco de dados
+                var alunoDb = await _alunoRepositorio.BuscarAlunoPorIdAsync(alunoId);
+                var cursoDb = await _cursoRepositorio.BuscarCursoPorIdAsync(cursoId);
+
+                if (alunoDb == null)
+                {
+                    throw new InvalidOperationException($"Aluno com ID {alunoId} não encontrado.");
                 }
 
-                // Adicionando o aluno ao curso
-                await _alunoCursoRepositorio.AddAlunoAoCursoAsync(alunoId, cursoId);
+                if (cursoDb == null)
+                {
+                    throw new InvalidOperationException($"Curso com ID {cursoId} não encontrado.");
+                }
 
-                // Mensagem de sucesso e armazenamento do AlunoId
+                // Adiciona o aluno ao curso
+                await _alunoCursoRepositorio.AddAlunoAoCursoAsync(alunoDb, cursoDb);
+
+                // Exibe mensagem de sucesso
                 TempData["MensagemSucesso"] = "O Aluno foi adicionado ao curso com sucesso!";
-                TempData["AlunoId"] = alunoId; // Armazenando o AlunoId em TempData
-
-                // Redireciona de volta para a página de cursos disponíveis para o aluno
-                return Redirect(urlAnterior);
+                return Redirect(Request.Headers["Referer"].ToString()); // Redireciona para a página anterior
             }
             catch (Exception ex)
             {
-                // Log do erro (opcional, dependendo da implementação de log no projeto)
+                // Registra o erro e exibe mensagem de erro
+                _logger.LogError(ex, "Erro ao adicionar aluno ao curso");
                 TempData["MensagemErro"] = $"Erro ao adicionar o aluno ao curso: {ex.Message}";
-                return RedirectToAction("CursosDisponiveis", "Aluno");
+                return Redirect(Request.Headers["Referer"].ToString()); // Redireciona para a página anterior
             }
         }
 
-        // Ação para remover um aluno de um curso
+        // Método para remover um aluno de um curso
         [HttpPost]
         public async Task<IActionResult> RemoverAlunoDoCurso(int alunoId, int cursoId)
         {
             try
             {
-                var urlAnterior = Request.Headers["Referer"].ToString();
-
-                // Verificando se o aluno e o curso existem
-                var alunoExiste = await _alunoRepositorio.BuscarAlunoPorIdAsync(alunoId);
-                var cursoExiste = await _cursoRepositorio.BuscarCursoPorIdAsync(cursoId);
-
-                // Se aluno ou curso não forem encontrados, redireciona para a página de cursos do aluno
-                if (alunoExiste == null || cursoExiste == null)
+                // Valida os IDs fornecidos
+                if (alunoId <= 0 || cursoId <= 0)
                 {
-                    TempData["MensagemErro"] = "Aluno/Curso não encontrado!";
-                    return Redirect(urlAnterior);
+                    throw new ArgumentException("Id de aluno/curso inválido.");
                 }
 
-                // Removendo o aluno do curso
+                // Remove o aluno do curso
                 await _alunoCursoRepositorio.RemoverAlunoDoCursoAsync(alunoId, cursoId);
 
-                // Mensagem de sucesso e armazenamento do AlunoId
+                // Exibe mensagem de sucesso
                 TempData["MensagemSucesso"] = "O Aluno foi removido do curso.";
-                TempData["AlunoId"] = alunoId; // Armazenando o AlunoId em TempData
-
-                // Redireciona de volta para a página de cursos do aluno
-                return Redirect(urlAnterior);
+                return Redirect(Request.Headers["Referer"].ToString()); // Redireciona para a página anterior
             }
             catch (Exception ex)
             {
-                // Log do erro (opcional, dependendo da implementação de log no projeto)
-                TempData["MensagemErro"] = $"Desculpe, houve erro ao remover o aluno do curso: {ex.Message}";
-                return RedirectToAction("CursosDoAluno", "Aluno");
+                // Registra o erro e exibe mensagem de erro
+                _logger.LogError(ex, "Erro ao remover aluno do curso");
+                TempData["MensagemErro"] = $"Erro ao remover o aluno do curso: {ex.Message}";
+                return Redirect(Request.Headers["Referer"].ToString()); // Redireciona para a página anterior
             }
         }
     }

@@ -3,36 +3,41 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MasterIdiomas.Models
 {
+    // Modelo que representa os dados de um curso no sistema.
     public class CursoModel
     {
         [Key]
         public int CursoId { get; set; }
 
         [Required(ErrorMessage = "Por favor, selecione o idioma do curso.")]
-        public string Idioma { get; set; } = string.Empty;
+        public required string Idioma { get; set; }
 
         [Required(ErrorMessage = "Por favor, informe o turno do curso.")]
-        public string Turno { get; set; } = string.Empty;
+        public required TurnoEnum Turno { get; set; }
 
         [Required(ErrorMessage = "Por favor, informe o nível do curso.")]
-        public string Nivel { get; set; } = string.Empty;
+        public required NivelEnum Nivel { get; set; }
 
         [Required(ErrorMessage = "Por favor, informe a data de início do curso.")]
-        public DateTime DataInicio { get; set; }
+        public required DateTime DataInicio { get; set; }
 
         [Required(ErrorMessage = "Por favor, informe a carga horária do curso.")]
-        public int CargaHoraria { get; set; }
+        [Range(10, 50, ErrorMessage = "A carga horária deve estar entre 10 e 50 horas.")]
+        public required int CargaHoraria { get; set; }
 
         [Required(ErrorMessage = "Por favor, informe o número máximo de alunos para o curso.")]
-        public int MaxAlunos { get; set; }
+        [Range(10, 30, ErrorMessage = "O número máximo de alunos deve estar entre 10 e 30.")]
+        public required int MaxAlunos { get; set; }
 
-        public StatusCursoEnum? Status { get; set; }
+        public int? QuantidadeAlunos { get; set; }
+
+        public StatusCursoEnum Status { get; set; } = StatusCursoEnum.EmAndamento;
 
         public DateTime? DataAtualizacao { get; set; }
 
         public int? ProfessorId { get; set; }
 
-        public ProfessorModel? Professor { get; set; }
+        public virtual ProfessorModel? Professor { get; set; }
 
         public virtual IList<AlunoCursoModel> AlunoCurso { get; set; } = new List<AlunoCursoModel>();
     }

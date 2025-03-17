@@ -1,72 +1,59 @@
-﻿using System.Net;
-using System.Net.Mail;
+﻿using System.Net.Mail;  // Namespace para lidar com o envio de e-mails.
+using System.Net;  // Namespace para autenticação de rede (credentials).
+using Microsoft.Extensions.Options;  // Namespace para acessar configurações injetadas.
 
 namespace MasterIdiomas.Helper
 {
     // Classe responsável pelo envio de e-mails
     public class Email : IEmail
     {
-        private readonly IConfiguration _configuration;
-        private readonly ILogger<Email> _logger;
+        // Definindo variáveis para armazenar as configurações do servidor SMTP e credenciais de envio
+        private readonly string _smtpServer;
+        private readonly string _senderEmail;
+        private readonly string _senderPassword;
+        private readonly int _smtpPort;
 
-        // Construtor para injeção de dependências
-        public Email(IConfiguration configuration, ILogger<Email> logger)
+        // Construtor da classe, recebe as configurações de e-mail (EmailSettings) e as armazena nas variáveis de instância.
+        public Email(IOptions<EmailSettings> emailSettings)
         {
-            _configuration = configuration;
-            _logger = logger;
+            _smtpServer = emailSettings.Value.SmtpServer;  // Configuração do servidor SMTP
+            _senderEmail = emailSettings.Value.SenderEmail;  // E-mail do remetente
+            _senderPassword = emailSettings.Value.SenderPassword;  // Senha do remetente
+            _smtpPort = emailSettings.Value.SmtpPort;  // Porta do servidor SMTP
         }
 
-        // Método para enviar um e-mail
-        public bool Enviar(string email, string assunto, string mensagem)
+        // Método assíncrono para enviar um e-mail
+        public async Task<bool> EnviarEmailAsync(string destinatario, string assunto, string mensagem)
         {
-            try
-            {
-                // Recupera as configurações de SMTP do arquivo de configuração
-                string host = _configuration.GetValue<string>("SMTP:Host") ?? throw new ArgumentNullException("SMTP:Host");
-                string nome = _configuration.GetValue<string>("SMTP:Nome") ?? throw new ArgumentNullException("SMTP:Nome");
-                string username = _configuration.GetValue<string>("SMTP:UserName") ?? throw new ArgumentNullException("SMTP:UserName");
-                string senha = _configuration.GetValue<string>("SMTP:Senha") ?? throw new ArgumentNullException("SMTP:Senha");
-                int porta = _configuration.GetValue<int?>("SMTP:Porta") ?? throw new ArgumentNullException("SMTP:Porta");
+            // Recolhe as configurações do servidor SMTP e credenciais para enviar o e-mail
+            var smtpServer = _smtpServer;
+            var smtpPort = _smtpPort;
+            var senderEmail = _senderEmail;
+            var senderPassword = _senderPassword;
 
-                // Criação do objeto MailMessage para compor o e-mail
-                MailMessage mail = new MailMessage
+            // Usando o SmtpClient para configurar e enviar o e-mail
+            using (var client = new SmtpClient(smtpServer, smtpPort))
+            {
+                client.Credentials = new NetworkCredential(senderEmail, senderPassword);  // Configura as credenciais de autenticação
+                client.EnableSsl = true;  // Habilita SSL para segurança durante a comunicação com o servidor SMTP
+
+                // Criação do objeto MailMessage para configurar os dados do e-mail
+                var mailMessage = new MailMessage
                 {
-                    From = new MailAddress(username, nome), // Definindo remetente
-                    Subject = assunto, // Definindo assunto do e-mail
-                    Body = mensagem, // Definindo corpo da mensagem
-                    IsBodyHtml = true, // Define se o corpo do e-mail será em HTML
-                    Priority = MailPriority.High // Define a prioridade do e-mail
+                    From = new MailAddress(senderEmail),  // E-mail do remetente
+                    Subject = assunto,  // Assunto do e-mail
+                    Body = mensagem,  // Corpo do e-mail
+                    IsBodyHtml = true  // Indica que o corpo do e-mail é em HTML
                 };
 
-                // Adiciona o destinatário
-                mail.To.Add(email);
+                mailMessage.To.Add(destinatario);  // Adiciona o destinatário ao e-mail
 
-                // Envio do e-mail utilizando o SmtpClient
-                using (SmtpClient smtp = new SmtpClient(host, porta))
-                {
-                    smtp.Credentials = new NetworkCredential(username, senha); // Credenciais para autenticação no servidor SMTP
-                    smtp.EnableSsl = false;
-                    smtp.TargetName = "STARTTLS"; smtp.Send(mail); // Envia o e-mail
-                    return true; // Retorna true se o envio for bem-sucedido
-                }
-            }
-            // Tratamento de exceções específicas para problemas no envio de e-mail
-            catch (SmtpException ex)
-            {
-                _logger.LogError(ex, "Erro ao enviar o e-mail via SMTP.");
-                return false; // Retorna false se ocorrer erro no envio
-            }
-            catch (FormatException ex)
-            {
-                _logger.LogError(ex, "Erro de formato ao enviar o e-mail.");
-                return false; // Retorna false se houver erro no formato de dados
-            }
-            // Captura qualquer outro erro inesperado
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro desconhecido ao enviar o e-mail.");
-                return false; // Retorna false se ocorrer erro desconhecido
+                // Envia o e-mail de forma assíncrona
+                await client.SendMailAsync(mailMessage);
+
+                return true;  // Retorna true para indicar que o e-mail foi enviado com sucesso
             }
         }
+
     }
 }

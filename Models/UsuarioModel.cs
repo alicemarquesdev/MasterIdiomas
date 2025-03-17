@@ -1,35 +1,43 @@
-﻿using MasterIdiomas.Helper;
+﻿using MasterIdiomas.Enums;
+using MasterIdiomas.Helper;
 using System.ComponentModel.DataAnnotations;
 
 namespace MasterIdiomas.Models
 {
+    // Modelo que representa os dados do usuário no sistema.
     public class UsuarioModel
     {
         [Key]
         public int UsuarioId { get; set; }
 
         [Required(ErrorMessage = "Por favor, insira o nome.")]
-        [StringLength(100, ErrorMessage = "O nome deve ter no máximo 100 caracteres.")]
-        public string Nome { get; set; } = string.Empty;
+        [StringLength(30, ErrorMessage = "O nome deve ter no máximo 30 caracteres.")]
+        public required string Nome { get; set; }
 
         [Required(ErrorMessage = "O e-mail é obrigatório.")]
         [EmailAddress(ErrorMessage = "O e-mail informado não é válido.")]
-        public string Email { get; set; } = string.Empty;
+        public required string Email { get; set; }
+
+        [Required(ErrorMessage = "Por favor, selecione o gênero.")]
+        public required GeneroEnum Genero { get; set; }
+
+        [Required(ErrorMessage = "A data de nascimento é obrigatória.")]
+        public required DateTime DataNascimento { get; set; }
 
         [DataType(DataType.Date)]
-        public DateTime? DataCadastro { get; set; } = DateTime.Now;
+        public DateTime DataCadastro { get; set; } = DateTime.Now;
 
         [Required(ErrorMessage = "A senha é obrigatória.")]
-        [MinLength(8, ErrorMessage = "A senha deve ter no mínimo 8 caracteres.")]
         [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$",
             ErrorMessage = "A senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial.")]
-        public string Senha { get; set; } = string.Empty;
+        public required string Senha { get; set; }
 
-        // Verifica se a senha informada é válida comparando com o hash armazenado
+        // Verifica se a senha informada é válida, gerando hash para a senha inserida e comparando com o hash da senha armazenada no banco de dados.
         public bool SenhaValida(string senha)
         {
             return Senha == senha.GerarHash();
         }
+
 
         // Converte a senha existente para hash
         public void SetSenhaHash()
@@ -43,11 +51,11 @@ namespace MasterIdiomas.Models
             Senha = novaSenha.GerarHash();
         }
 
-        // Gera uma nova senha aleatória, converte para hash e retorna a senha gerada
+        // Gera uma nova senha aleatória, usada para redefinir a senha do usuário.
+        // A senha é enviada por email.
         public string GerarNovaSenha()
         {
             string novaSenha = Guid.NewGuid().ToString().Substring(0, 8);
-            Senha = novaSenha.GerarHash();
             return novaSenha;
         }
     }

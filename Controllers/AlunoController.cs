@@ -1,157 +1,170 @@
 ﻿using MasterIdiomas.Filters;
 using MasterIdiomas.Models;
 using MasterIdiomas.Repositorio.Interfaces;
+using MasterIdiomas.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MasterIdiomas.Controllers
 {
-    [UsuarioLogado]
+    // AlunoController responsável por gerenciar as ações relacionadas aos alunos no sistema.
+    // Ele fornece métodos GET para exibição de informações e métodos POST para manipulação de dados.
+
+    // Métodos:
+
+    // GET Alunos() - Retorna a view com a lista de todos os alunos cadastrados no sistema.
+    // GET DetalhesAluno(int id) - Retorna a view com os detalhes de um aluno específico,
+    // incluindo os cursos em que ele está matriculado e os cursos disponíveis para inscrição.
+
+    // POST AddAluno(AlunoModel aluno) - Adiciona um novo aluno ao banco de dados caso os dados sejam válidos.
+    // POST AtualizarAluno(AlunoModel aluno) - Atualiza as informações de um aluno existente no banco de dados.
+    // POST RemoverAluno(int id) - Remove um aluno do banco de dados com base no ID fornecido.
+
+    [UsuarioLogado] // Garante que o usuário esteja logado para acessar
     public class AlunoController : Controller
     {
         private readonly IAlunoRepositorio _alunoRepositorio;
         private readonly IAlunoCursoRepositorio _alunoCursoRepositorio;
+        private readonly ILogger<AlunoController> _logger;
 
-        // Construtor que injeta os repositórios necessários
+        // Construtor que injeta as dependências e verifica se são nulas
         public AlunoController(IAlunoRepositorio alunoRepositorio,
-                                IAlunoCursoRepositorio alunoCursoRepositorio)
+                                IAlunoCursoRepositorio alunoCursoRepositorio,
+                                ILogger<AlunoController> logger)
         {
-            _alunoRepositorio = alunoRepositorio;
-            _alunoCursoRepositorio = alunoCursoRepositorio;
+            _alunoRepositorio = alunoRepositorio ?? throw new ArgumentNullException(nameof(alunoRepositorio));
+            _alunoCursoRepositorio = alunoCursoRepositorio ?? throw new ArgumentNullException(nameof(alunoCursoRepositorio));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         // Método para listar todos os alunos
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Alunos()
         {
-            List<AlunoModel> alunos = await _alunoRepositorio.BuscarTodosAlunosAsync();
-            return View(alunos);
-        }
-         
-        // Método para exibir o formulário de adição de um novo aluno
-        public ActionResult AddAluno()
-        {
-            return View();
-        }
-
-        // Método para buscar e exibir os dados de um aluno para edição
-        public async Task<ActionResult> AtualizarAluno(int id)
-        {
-            AlunoModel aluno = await _alunoRepositorio.BuscarAlunoPorIdAsync(id);
-            return View(aluno);
-        }
-
-        // Método para buscar e exibir os dados de um aluno para remoção
-        public async Task<ActionResult> RemoverAluno(int id)
-        {
-            AlunoModel aluno = await _alunoRepositorio.BuscarAlunoPorIdAsync(id);
-            return View(aluno);
-        }
-
-        // Método para listar os cursos em que um aluno está matriculado
-        public async Task<ActionResult> CursosDoAluno(int id)
-        {
-            AlunoModel aluno = await _alunoRepositorio.BuscarAlunoPorIdAsync(id);
-
-            if (aluno == null)
+            try
             {
-                TempData["MensagemErro"] = "Aluno não encontrado!";
-                return RedirectToAction("Index");
+                var viewModel = new AlunoViewModel
+                {
+                    Alunos = await _alunoRepositorio.BuscarTodosAlunosAsync() ?? throw new ArgumentNullException("Lista de alunos retornou null"),
+                    Aluno = new AlunoModel
+                    {
+                        Nome = string.Empty,
+                        Genero = Enums.GeneroEnum.Outro,
+                        DataNascimento = new DateTime(1950, 1, 1)
+                    }
+                };
+
+                return View(viewModel);
             }
-
-            List<CursoModel> cursosAluno = await _alunoCursoRepositorio.BuscarCursosDoAlunoAsync(aluno.AlunoId);
-            ViewBag.AlunoId = aluno.AlunoId;
-
-            // Verifica se existe um AlunoId na TempData e o passa para a ViewBag
-            if (TempData["AlunoId"] != null)
+            catch (Exception ex)
             {
-                ViewBag.AlunoId = TempData["AlunoId"];
+                _logger.LogError(ex, "Erro ao exibir a view Alunos.");
+                TempData["MensagemErro"] = "Houve um erro ao exibir a página de Alunos, tente novamente.";
+                return RedirectToAction("Index", "Home");
             }
-
-            return View(cursosAluno);
         }
 
-        // Método para listar cursos disponíveis para um aluno se matricular
-        public async Task<ActionResult> CursosDisponiveis(int id)
+        // Método para exibir os detalhes de um aluno
+        public async Task<ActionResult> DetalhesAluno(int id)
         {
-            AlunoModel aluno = await _alunoRepositorio.BuscarAlunoPorIdAsync(id);
-
-            if (aluno == null)
+            try
             {
-                TempData["MensagemErro"] = "Aluno não encontrado!";
-                return View();
+                if (id <= 0)
+                {
+                    throw new ArgumentNullException(nameof(id), "O id é inválido");
+                }
+
+                var aluno = await _alunoRepositorio.BuscarAlunoPorIdAsync(id)
+                    ?? throw new ArgumentNullException("Aluno não encontrado!");
+
+                var viewModel = new AlunoViewModel
+                {
+                    Aluno = aluno,
+                    CursosDoAluno = await _alunoCursoRepositorio.BuscarCursosDoAlunoAsync(aluno.AlunoId)
+                        ?? throw new ArgumentNullException("Lista de cursos do aluno retornou null"),
+                    CursosDisponiveisParaOAluno = await _alunoCursoRepositorio.BuscarCursosAlunoNaoEstaInscritoAsync(aluno.AlunoId)
+                        ?? throw new ArgumentNullException("Lista de cursos disponíveis retornou null")
+                };
+
+                return View(viewModel);
             }
-
-            List<CursoModel> cursosDisponiveis = await _alunoCursoRepositorio.BuscarCursosAlunoNaoInscritoAsync(aluno.AlunoId);
-
-            ViewBag.AlunoId = aluno.AlunoId;  // Passando o AlunoId para a view
-
-            // Verificando se TempData contém o AlunoId, para garantir que o valor seja repassado
-            if (TempData["AlunoId"] != null)
+            catch (Exception ex)
             {
-                ViewBag.AlunoId = TempData["AlunoId"];
+                _logger.LogError(ex, "Erro ao exibir a view DetalhesAluno.");
+                TempData["MensagemErro"] = "Houve um erro ao exibir a página, tente novamente.";
+                return RedirectToAction("Alunos");
             }
-
-            return View(cursosDisponiveis);
         }
 
-        // Ação POST para adicionar um novo aluno
+        // Método para adicionar um novo aluno
         [HttpPost]
         public async Task<ActionResult> AddAluno(AlunoModel aluno)
         {
             try
             {
+                if (aluno == null)
+                {
+                    throw new ArgumentNullException(nameof(aluno), "Aluno é nulo");
+                }
+
                 if (ModelState.IsValid)
                 {
                     await _alunoRepositorio.AddAlunoAsync(aluno);
-
                     TempData["MensagemSucesso"] = "O Aluno foi criado com sucesso!";
-                    return RedirectToAction("Index");
                 }
-                return View(aluno);
+                return Redirect(Request.Headers["Referer"].ToString());
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                TempData["MensagemErro"] = "Desculpe, ocorreu um erro no cadastro do aluno, tente novamente.";
-                return View(aluno);
+                _logger.LogError(ex, "Erro ao adicionar aluno.");
+                TempData["MensagemErro"] = "Erro no cadastro do aluno, tente novamente.";
+                return Redirect(Request.Headers["Referer"].ToString());
             }
         }
 
-        // Ação POST para atualizar os dados de um aluno
+        // Método para atualizar os dados de um aluno
         [HttpPost]
         public async Task<ActionResult> AtualizarAluno(AlunoModel aluno)
         {
             try
             {
+                if (aluno == null)
+                {
+                    throw new ArgumentNullException(nameof(aluno), "Aluno é nulo");
+                }
+
                 if (ModelState.IsValid)
                 {
                     await _alunoRepositorio.AtualizarAlunoAsync(aluno);
-
                     TempData["MensagemSucesso"] = "Os dados do aluno foram atualizados com sucesso!";
-                    return RedirectToAction("Index");
                 }
-                return View(aluno);
-            }
-            catch (Exception)
-            {
-                TempData["MensagemErro"] = "Desculpe, não conseguimos atualizar os dados do aluno, tente novamente.";
-                return View(aluno);
-            }
-        }
-
-        // Ação POST para confirmar a remoção de um aluno
-        [HttpPost]
-        public async Task<ActionResult> RemoverAlunoConfirmacao(int id)
-        {
-            try
-            {
-                await _alunoRepositorio.RemoverAlunoAsync(id);
-
-                TempData["MensagemSucesso"] = "O aluno foi removido com sucesso!";
-                return RedirectToAction("Index");
+                return Redirect(Request.Headers["Referer"].ToString());
             }
             catch (Exception ex)
             {
-                TempData["MensagemErro"] = $"Desculpe, não conseguimos remover o aluno, tente novamente. {ex}";
-                return RedirectToAction("Index");
+                _logger.LogError(ex, "Erro ao atualizar aluno.");
+                TempData["MensagemErro"] = "Erro ao atualizar os dados do aluno, tente novamente.";
+                return Redirect(Request.Headers["Referer"].ToString());
+            }
+        }
+
+        // Método para remover um aluno
+        [HttpPost]
+        public async Task<ActionResult> RemoverAluno(int id)
+        {
+            try
+            {
+                if (id <= 0)
+                {
+                    throw new ArgumentNullException(nameof(id), "O id é inválido");
+                }
+                await _alunoRepositorio.RemoverAlunoAsync(id);
+                TempData["MensagemSucesso"] = "O aluno foi removido com sucesso!";
+                return Redirect(Request.Headers["Referer"].ToString());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao remover aluno.");
+                TempData["MensagemErro"] = "Erro ao remover o aluno, tente novamente.";
+                return Redirect(Request.Headers["Referer"].ToString());
             }
         }
     }

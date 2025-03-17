@@ -2,26 +2,28 @@
 
 namespace MasterIdiomas.Repositorio.Interfaces
 {
+    // Interface para operações relacionadas a professores
     public interface IProfessorRepositorio
     {
-        Task<List<CursoModel>> BuscarCursosDoProfessorAsync(int professorId);
+        // Retorna um professor específico baseado no seu ID
+        Task<ProfessorModel?> BuscarProfessorPorIdAsync(int id);
 
+        // Retorna uma lista de todos os professores cadastrados
         Task<List<ProfessorModel>> BuscarTodosProfessoresAsync();
 
-        Task<ProfessorModel> BuscarProfessorExistenteAsync(string email, string nome, int professorIdIgnorar);
+        // Verifica se um professor já existe no sistema com base no e-mail e nome
+        Task<bool> VerificarProfessorExistenteAsync(string email, string nome);
 
-        Task<ProfessorModel> BuscarProfessorPorIdAsync(int id);
-
+        // Adiciona um novo professor ao sistema
         Task AddProfessorAsync(ProfessorModel professor);
 
+        // Atualiza as informações de um professor existente
         Task AtualizarProfessorAsync(ProfessorModel professor);
 
-        Task AddProfessorAoCursoAsync(int professorId, int cursoId);
-
-        Task RemoverProfessorDoCursoAsync(int professorId, int cursoId);
-
+        // Remove um professor do sistema com base no seu ID
         Task<bool> RemoverProfessorAsync(int id);
 
+        // Retorna o total de professores cadastrados no sistema
         int TotalProfessores();
     }
 }

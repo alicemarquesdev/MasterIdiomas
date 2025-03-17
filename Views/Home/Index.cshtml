@@ -1,4 +1,5 @@
-﻿@model List<CursoModel>
+﻿@model HomeViewModel
+
 @{
     ViewData["Title"] = "Visao Geral";
 }
@@ -6,7 +7,7 @@
 <!-- Espaço antes do h2 -->
 <div class="container mt-5 mb-5">
     <h2 class="mb-5">
-        Olá, @ViewBag.Usuario. Bem-vindo à Master Idiomas!
+        Olá, @Model.UsuarioNome. Bem-vindo à Master Idiomas!
     </h2>
 </div>
 
@@ -22,7 +23,7 @@
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                 TOTAL DE ALUNOS
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.TotalAlunos</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalAlunos</div>
                         </div>
                         <div class="col-auto"><i class="fas fa-user-graduate fa-2x text-gray-300"></i></div>
                     </div>
@@ -38,7 +39,7 @@
                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                 TOTAL DE CURSOS
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.TotalCursos</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalCursos</div>
                         </div>
                         <div class="col-auto"><i class="fas fa-book-open fa-2x text-gray-300"></i></div>
                     </div>
@@ -54,7 +55,7 @@
                             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                                 TOTAL DE PROFESSORES
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.TotalProfessores</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalProfessores</div>
                         </div>
                         <div class="col-auto"><i class="fas fa-chalkboard-teacher fa-2x text-gray-300"></i></div>
                     </div>
@@ -70,7 +71,7 @@
                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                                 TOTAL DE IDIOMAS
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.ToTalIdiomas</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalIdiomas</div>
                         </div>
                         <div class="col-auto"><i class="fas fa-globe fa-2x text-gray-300"></i></div>
                     </div>
@@ -95,32 +96,32 @@
                                 <th>Nível</th>
                                 <th>Data de Início</th>
                                 <th>Status</th>
-                                <th>Professor</th>
                                 <th>Alunos</th>
                                 <th>Máx. Alunos</th>
+                                <th>Professor</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @if (Model != null && Model.Any())
+                            @if (Model.Cursos != null && Model.Cursos.Any())
                             {
-                                foreach (var curso in Model)
+                                foreach (var curso in Model.Cursos)
                                 {
                                     <tr>
-                                        <td>@curso.Idioma</td>
+                                        <td><a class="font-weight-bold" asp-controller="Curso" asp-action="DetalhesCurso" asp-route-id="@curso.CursoId">@curso.Idioma</a></td>
                                         <td>@curso.Turno</td>
                                         <td>@curso.Nivel</td>
                                         <td>@curso.DataInicio.ToString("dd/MM/yyyy")</td>
                                         <td>@curso.Status</td>
-                                        <td>@(curso.Professor != null ? curso.Professor.Nome : "-")</td>
-                                        <td>@ViewBag.TotalAlunosPorCurso[curso.CursoId]</td>
+                                        <td>@curso.QuantidadeAlunos</td>
                                         <td>@curso.MaxAlunos</td>
+                                        <td>@(curso.Professor != null ? curso.Professor.Nome : "-")</td>
                                     </tr>
                                 }
                             }
                             else
                             {
                                 <tr>
-                                    <td colspan="8">Nenhum curso encontrado.</td>
+                                    <td colspan="7">Nenhum curso encontrado.</td>
                                 </tr>
                             }
                         </tbody>

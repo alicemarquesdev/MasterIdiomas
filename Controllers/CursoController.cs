@@ -1,218 +1,205 @@
-﻿using MasterIdiomas.Filters;
+﻿using MasterIdiomas.Enums;
+using MasterIdiomas.Filters;
+using MasterIdiomas.Helper;
 using MasterIdiomas.Models;
 using MasterIdiomas.Repositorio.Interfaces;
+using MasterIdiomas.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MasterIdiomas.Controllers
 {
-    [UsuarioLogado]
+    // CursoController responsável por gerenciar as ações relacionadas aos cursos no sistema.
+    // Ele fornece métodos GET para exibição de informações e métodos POST para manipulação de dados.
+
+    // Métodos:
+
+    // GET Cursos() - Retorna a view com a lista de todos os cursos cadastrados no sistema.
+    // GET DetalhesCurso(int id) - Retorna a view com os detalhes de um curso específico,
+    // incluindo os alunos matriculados e os alunos disponíveis para inscrição.
+    // GET Idioma(string idioma) - Retorna a view com cursos de um idioma passado como parametro.
+
+    // POST AddCurso(CursoModel curso) - Adiciona um novo curso ao banco de dados caso os dados sejam válidos.
+    // POST AtualizarCurso(CursoModel curso) - Atualiza as informações de um curso existente no banco de dados.
+    // POST RemoverCurso(int id) - Remove um curso do banco de dados com base no ID fornecido.
+
+    [UsuarioLogado] // Garante que o usuário esteja logado para acessar
     public class CursoController : Controller
     {
         // Declaração de dependências
         private readonly ICursoRepositorio _cursoRepositorio;
-
-        private readonly IProfessorRepositorio _professorRepositorio;
         private readonly IAlunoCursoRepositorio _alunoCursoRepositorio;
+        private readonly IProfessorRepositorio _professorRepositorio;
+        private readonly IdiomasSettings _idiomasSettings;
+        private readonly ILogger<CursoController> _logger;
 
         // Construtor que injeta as dependências necessárias
         public CursoController(ICursoRepositorio cursoRepositorio,
                               IAlunoCursoRepositorio alunoCursoRepositorio,
-                              IProfessorRepositorio professorRepositorio)
+                              IProfessorRepositorio professorRepositorio,
+                              IdiomasSettings idiomasSettings,
+                              ILogger<CursoController> logger)
         {
-            _cursoRepositorio = cursoRepositorio;
-            _professorRepositorio = professorRepositorio;
-            _alunoCursoRepositorio = alunoCursoRepositorio;
+            _cursoRepositorio = cursoRepositorio ?? throw new ArgumentNullException(nameof(cursoRepositorio));
+            _alunoCursoRepositorio = alunoCursoRepositorio ?? throw new ArgumentNullException(nameof(alunoCursoRepositorio));
+            _professorRepositorio = professorRepositorio ?? throw new ArgumentNullException(nameof(professorRepositorio));
+            _idiomasSettings = idiomasSettings ?? throw new ArgumentNullException(nameof(idiomasSettings)); // Garantindo que IdiomasSettings não seja nulo
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         // Método para exibir a lista de cursos
-        public async Task<IActionResult> Index(int CursoId)
+        public async Task<IActionResult> Cursos()
         {
             try
             {
-                List<CursoModel> cursos = await _cursoRepositorio.BuscarTodosCursosAsync();
-                return View(cursos);
+                // Criando um modelo de curso para exibição inicial na view
+                var curso = new CursoModel
+                {
+                    Idioma = "Alemão",
+                    Turno = TurnoEnum.Manha,
+                    Nivel = NivelEnum.Iniciante,
+                    DataInicio = DateTime.UtcNow,
+                    CargaHoraria = 0,
+                    MaxAlunos = 0,
+                };
+
+                // Preenchendo o ViewModel com cursos e professores para a view
+                var viewModel = new CursoViewModel
+                {
+                    Curso = curso,
+                    Idiomas = _idiomasSettings.Idiomas, // Passando a lista de idiomas para o ViewModel
+                    Cursos = await _cursoRepositorio.BuscarTodosCursosAsync()
+                    ?? throw new ArgumentNullException("Lista de cursos retornou null"),
+                    Professores = await _professorRepositorio.BuscarTodosProfessoresAsync()
+                    ?? throw new ArgumentNullException("Lista de professores retornou null")
+                };
+
+                return View(viewModel);
             }
             catch (Exception ex)
             {
-                TempData["MensagemErro"] = $"Erro ao carregar cursos: {ex.Message}";
-                return View(new List<CursoModel>());
+                // Log de erro em caso de falha no carregamento
+                _logger.LogError(ex, "Erro ao carregar view Cursos");
+                TempData["MensagemErro"] = "Erro ao carregar página de Cursos, tente novamente.";
+                return RedirectToAction("Index", "Home");
             }
         }
 
         // Método para exibir alunos de um curso específico
-        public async Task<IActionResult> AlunosDoCurso(int CursoId)
+        public async Task<IActionResult> DetalhesCurso(int id)
         {
             try
             {
-                CursoModel curso = await _cursoRepositorio.BuscarCursoPorIdAsync(CursoId);
-                if (curso == null)
+                // Verifica se o id do curso é válido
+                if (id <= 0)
                 {
-                    TempData["MensagemErro"] = "Curso não encontrado.";
-                    return RedirectToAction("Index");
+                    throw new Exception("Id é null");
                 }
 
-                List<AlunoModel> alunos = await _alunoCursoRepositorio.BuscarAlunosDoCursoAsync(curso.CursoId);
-                ViewBag.CursoId = curso.CursoId;
-                return View(alunos);
+                // Buscar o curso pelo id
+                CursoModel curso = await _cursoRepositorio.BuscarCursoPorIdAsync(id);
+                if (curso == null)
+                {
+                    throw new Exception("Curso não encontrado");
+                }
+
+                // Preparando o ViewModel com detalhes do curso, alunos e professores
+                var viewModel = new CursoViewModel
+                {
+                    Curso = curso,
+                    Idiomas = _idiomasSettings.Idiomas, // Passando a lista de idiomas para o ViewModel
+                    AlunosDoCurso = await _alunoCursoRepositorio.BuscarAlunosDoCursoAsync(curso.CursoId)
+                    ?? throw new ArgumentNullException("Lista de alunos do curso retornou null"),
+                    AlunosNaoInscritosNoCurso = await _alunoCursoRepositorio.BuscarAlunosNaoInscritosNoCursoAsync(curso.CursoId)
+                    ?? throw new ArgumentNullException("Lista de alunos não inscritos no curso retornou null"),
+                    Professores = await _professorRepositorio.BuscarTodosProfessoresAsync()
+                    ?? throw new ArgumentNullException("Lista de professores retornou null")
+                };
+
+                return View(viewModel);
             }
             catch (Exception ex)
             {
-                TempData["MensagemErro"] = $"Erro ao carregar alunos do curso: {ex.Message}";
-                return View(new List<AlunoModel>());
+                // Log de erro ao tentar carregar os detalhes do curso
+                _logger.LogError(ex, "Erro ao carregar view DetalhesCurso");
+                TempData["MensagemErro"] = "Erro ao carregar página de Detalhes de Curso, tente novamente.";
+                return RedirectToAction("Index", "Home");
             }
         }
 
         // Método para exibir alunos de um curso filtrados por idioma
-        public async Task<IActionResult> Idioma(CursoModel curso)
+        public async Task<IActionResult> Idioma(string idioma)
         {
             try
             {
-                List<AlunoModel> alunosPorIdioma = await _alunoCursoRepositorio.BuscarAlunosPorIdiomaAsync(curso);
-                ViewBag.IdiomaSelecionado = curso.Idioma;
-
-                return View(alunosPorIdioma);
-            }
-            catch (Exception ex)
-            {
-                TempData["MensagemErro"] = $"Erro ao carregar alunos por idioma: {ex.Message}";
-                return View(new List<AlunoModel>());
-            }
-        }
-
-        // Método para associar um professor a um curso
-        public async Task<IActionResult> AddAlunoAoCurso(int id)
-        {
-            try
-            {
-                var curso = await _cursoRepositorio.BuscarCursoPorIdAsync(id);
-                if (curso == null)
+                var curso = new CursoModel
                 {
-                    TempData["MensagemErro"] = "Curso não encontrado.";
-                    return RedirectToAction("Index");
-                }
-
-                List<AlunoModel> alunos = await _alunoCursoRepositorio.BuscarAlunosNaoInscritosNoCurso(id);
-                ViewBag.CursoId = curso.CursoId;
-
-                return View(alunos);
-            }
-            catch (Exception ex)
-            {
-                TempData["MensagemErro"] = $"Erro ao carregar professores para o curso: {ex.Message}";
-                return RedirectToAction("Index");
-            }
-        }
-
-        // Método para exibir o formulário de cadastro de curso
-        public async Task<IActionResult> AddCurso()
-        {
-            try
-            {
-                var idiomas = new List<string>
-                {
-                    "Inglês", "Espanhol", "Francês", "Alemão", "Italiano",
-                    "Mandarim", "Japonês", "Coreano", "Russo", "Árabe",
-                    "Português", "Hindi", "Turco", "Grego", "Holandês",
-                    "Polonês", "Sueco", "Dinamarquês", "Norueguês", "Finlandês",
-                    "Tcheco", "Hebraico", "Indonésio", "Tailandês", "Vietnamita",
-                    "Romeno", "Húngaro", "Búlgaro", "Croata", "Eslovaco"
+                    Idioma = "Alemão",
+                    Turno = TurnoEnum.Manha,
+                    Nivel = NivelEnum.Iniciante,
+                    DataInicio = DateTime.UtcNow,
+                    CargaHoraria = 0,
+                    MaxAlunos = 0,
                 };
 
-                ViewBag.Idiomas = idiomas;
-                ViewBag.Professores = await _professorRepositorio.BuscarTodosProfessoresAsync();
-                return View();
-            }
-            catch (Exception ex)
-            {
-                TempData["MensagemErro"] = $"Erro ao carregar dados para adicionar curso: {ex.Message}";
-                return View();
-            }
-        }
-
-        // Método para associar um professor a um curso
-        public async Task<IActionResult> AddProfessorAoCurso(int id)
-        {
-            try
-            {
-                var curso = await _cursoRepositorio.BuscarCursoPorIdAsync(id);
-                if (curso == null)
+                var professor = new ProfessorModel
                 {
-                    TempData["MensagemErro"] = "Curso não encontrado.";
-                    return RedirectToAction("Index");
-                }
-
-                List<ProfessorModel> professores = await _professorRepositorio.BuscarTodosProfessoresAsync();
-                ViewBag.Professores = professores;
-
-                return View(curso);
-            }
-            catch (Exception ex)
-            {
-                TempData["MensagemErro"] = $"Erro ao carregar professores para o curso: {ex.Message}";
-                return RedirectToAction("Index");
-            }
-        }
-
-        // Método para atualizar os dados de um curso
-        public async Task<IActionResult> AtualizarCurso(int id)
-        {
-            try
-            {
-                var idiomas = new List<string>
-                {
-                    "Inglês", "Espanhol", "Francês", "Alemão", "Italiano",
-                    "Mandarim", "Japonês", "Coreano", "Russo", "Árabe",
-                    "Português", "Hindi", "Turco", "Grego", "Holandês",
-                    "Polonês", "Sueco", "Dinamarquês", "Norueguês", "Finlandês",
-                    "Tcheco", "Hebraico", "Indonésio", "Tailandês", "Vietnamita",
-                    "Romeno", "Húngaro", "Búlgaro", "Croata", "Eslovaco"
+                    Nome = string.Empty,
+                    Genero = Enums.GeneroEnum.Outro,
+                    DataNascimento = new DateTime(1950, 1, 1),
+                    Email = string.Empty
                 };
 
-                ViewBag.Idiomas = idiomas;
-
-                var curso = await _cursoRepositorio.BuscarCursoPorIdAsync(id);
-                if (curso == null)
+                var viewModel = new CursoViewModel
                 {
-                    TempData["MensagemErro"] = "Curso não encontrado.";
-                    return RedirectToAction("Index");
-                }
+                    Curso = curso,
+                    Professor = professor,
+                    Idiomas = _idiomasSettings.Idiomas, // Passando a lista de idiomas para o ViewModel
+                    Cursos = await _cursoRepositorio.BuscarCursosPorIdiomaAsync(idioma)
+                    ?? throw new ArgumentNullException("Lista de cursos por idioma retornou null"),
+                    Professores = await _professorRepositorio.BuscarTodosProfessoresAsync()
+                    ?? throw new ArgumentNullException("Lista de professores retornou null")
+                };
 
-                if (curso.ProfessorId != null)
-                {
-                    ViewBag.ProfessorId = curso.ProfessorId;
-                }
-
-                return View(curso);
+                return View(viewModel);
             }
             catch (Exception ex)
             {
-                TempData["MensagemErro"] = $"Erro ao carregar dados do curso: {ex.Message}";
-                return RedirectToAction("Index");
+                _logger.LogError(ex, "Erro ao carregar view Idioma");
+                TempData["MensagemErro"] = "Erro ao carregar página, tente novamente.";
+                return RedirectToAction("Index", "Home");
             }
-        }
-
-        // Método para remover curso
-        public async Task<IActionResult> RemoverCurso(int id)
-        {
-            CursoModel curso = await _cursoRepositorio.BuscarCursoPorIdAsync(id);
-
-            return View(curso);
         }
 
         // Método para adicionar um novo curso
         [HttpPost]
-        public async Task<IActionResult> AddCurso(CursoModel curso, string ProfessorOp, int? professorId)
+        public async Task<IActionResult> AddCurso(CursoModel curso, int? professorId)
         {
             try
             {
-                await _cursoRepositorio.AddCursoAsync(curso);
-                TempData["MensagemSucesso"] = "Curso adicionado com sucesso!";
-                return RedirectToAction("Index");
+                // Verifica se algum parâmetro obrigatório está nulo
+                if (curso == null)
+                {
+                    throw new ArgumentNullException("ProfessorId/Curso é nulo");
+                }
+
+                // Verifica se o modelo é válido
+                if (ModelState.IsValid)
+                {
+                    // Adiciona o novo curso ao repositório
+                    await _cursoRepositorio.AddCursoAsync(curso);
+                    TempData["MensagemSucesso"] = "Curso adicionado com sucesso!";
+                    return RedirectToAction("Cursos");
+                }
+
+                // Se o modelo não for válido, redireciona para a página de cursos
+                return RedirectToAction("Cursos");
             }
             catch (Exception ex)
             {
-                TempData["MensagemErro"] = $"Erro ao adicionar curso: {ex.Message}";
-                return View(curso);
+                // Log de erro ao tentar adicionar o curso
+                _logger.LogError(ex, "Erro ao adicionar curso");
+                TempData["MensagemErro"] = $"{ex}";
+                return Redirect(Request.Headers["Referer"].ToString());
             }
         }
 
@@ -222,9 +209,19 @@ namespace MasterIdiomas.Controllers
         {
             try
             {
+                // Verifica se o curso está nulo
+                if (curso == null)
+                {
+                    throw new ArgumentNullException("Curso é nulo");
+                }
+
+                // Verifica se o modelo é válido
                 if (ModelState.IsValid)
                 {
+                    // Atualiza o curso no repositório
                     await _cursoRepositorio.AtualizarCursoAsync(curso);
+
+                    // Mensagem de sucesso conforme o status do curso
                     if (curso.Status == Enums.StatusCursoEnum.Cancelado)
                     {
                         TempData["MensagemSucesso"] = "Curso atualizado com sucesso! O status do curso foi alterado para Cancelado. Os alunos do curso foram todos removidos.";
@@ -233,34 +230,57 @@ namespace MasterIdiomas.Controllers
                     {
                         TempData["MensagemSucesso"] = "Curso atualizado com sucesso!";
                     }
-                    TempData["MensagemSucesso"] = "Curso atualizado com sucesso!";
-                    return RedirectToAction("Index");
+
+                    return Redirect(Request.Headers["Referer"].ToString());
                 }
 
-                TempData["MensagemErro"] = "Ocorreu um erro ao atualizar o curso. Por favor, verifique os dados.";
-                return View(curso);
+                // Se o modelo não for válido, exibe mensagem de erro
+                TempData["MensagemErro"] = "Por favor, verifique os dados.";
+                return Redirect(Request.Headers["Referer"].ToString());
             }
             catch (Exception ex)
             {
-                TempData["MensagemErro"] = $"Erro ao atualizar curso: {ex.Message}";
-                return View(curso);
+                // Log de erro ao tentar atualizar o curso
+                _logger.LogError(ex, "Erro ao atualizar curso");
+                TempData["MensagemErro"] = $"{ex}";
+                return Redirect(Request.Headers["Referer"].ToString());
             }
         }
 
         // Método para remover um curso
         [HttpPost]
-        public async Task<IActionResult> RemoverCursoConfirmacao(int id)
+        public async Task<IActionResult> RemoverCurso(int id)
         {
             try
             {
-                await _cursoRepositorio.RemoverCursoAsync(id);
+                // Verifica se o id do curso é válido
+                if (id <= 0)
+                {
+                    throw new ArgumentNullException("Id é nulo");
+                }
+
+                var curso = await _cursoRepositorio.BuscarCursoPorIdAsync(id);
+                if (curso == null)
+                {
+                    throw new ArgumentNullException("Curso não encontrado no banco de dados");
+
+                }
+
+                // Remover o curso do repositório
+                var cursoRemovido = await _cursoRepositorio.RemoverCursoAsync(id);
+
+                // Log de sucesso ao remover o curso
+                _logger.LogInformation($"Curso com ID {id} removido com sucesso.");
+
                 TempData["MensagemSucesso"] = "Curso removido com sucesso!";
-                return RedirectToAction("Index");
+                return RedirectToAction("Cursos");
             }
             catch (Exception ex)
             {
+                // Log de erro ao tentar remover o curso
+                _logger.LogError(ex, $"Erro ao remover curso com ID {id}");
                 TempData["MensagemErro"] = $"Erro ao remover curso: {ex.Message}";
-                return RedirectToAction("Index");
+                return RedirectToAction("Cursos");
             }
         }
     }

@@ -4,6 +4,6 @@
     public interface IEmail
     {
         // Método para enviar um e-mail com os parâmetros: destinatário, assunto e mensagem
-        bool Enviar(string email, string assunto, string mensagem);
+        Task<bool> EnviarEmailAsync(string destinatario, string assunto, string mensagem);
     }
 }

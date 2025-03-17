@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 namespace MasterIdiomas.Filters
 {
     // Filtro personalizado para verificar se o usuário está logado
+    // Para permitir acesso a views
     public class UsuarioLogado : ActionFilterAttribute
     {
         // Método que é executado antes da ação ser chamada
@@ -22,8 +23,8 @@ namespace MasterIdiomas.Filters
                     // Se a sessão estiver vazia, redireciona para a página de login
                     context.Result = new RedirectToRouteResult(new RouteValueDictionary
                     {
-                        { "controller", "Usuario" },
-                        { "action", "Index" }
+                        { "controller", "Login" },
+                        { "action", "Login" }
                     });
                 }
                 else
@@ -37,8 +38,8 @@ namespace MasterIdiomas.Filters
                         // Se não encontrar o usuário, redireciona para a página de login
                         context.Result = new RedirectToRouteResult(new RouteValueDictionary
                         {
-                            { "controller", "Usuario" },
-                            { "action", "Index" }
+                            { "controller", "Login" },
+                            { "action", "Login" }
                         });
                     }
                 }
@@ -51,8 +52,8 @@ namespace MasterIdiomas.Filters
                 // Em caso de erro, redireciona para a página de login
                 context.Result = new RedirectToRouteResult(new RouteValueDictionary
                 {
-                    { "controller", "Usuario" },
-                    { "action", "Index" }
+                    { "controller", "Login" },
+                    { "action", "Login" }
                 });
                 throw new InvalidOperationException("Erro ao verificar a sessão do usuário. Detalhes: " + ex.Message);
             }

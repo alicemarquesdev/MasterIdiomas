@@ -1,0 +1,79 @@
+﻿@model UsuarioModel
+
+<!-- Botão para alternar o menu lateral em dispositivos móveis (visível apenas em telas menores) -->
+<button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+    <i class="fa fa-bars"></i> <!-- Ícone de barras para abrir/fechar o menu -->
+</button>
+
+<!-- Topbar Search -->
+<!-- Formulário de pesquisa, utilizado para buscar cursos -->
+<form id="searchForm" class="d-flex position-relative w-50 " role="search">
+    <div class="input-group">
+        <input class="form-control bg-light" type="search" id="searchInput" name="termo" placeholder="Buscar cursos..." aria-label="Search" autocomplete="off">
+        <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button> <!-- Botão de pesquisa -->
+    </div>
+    <!-- Dropdown para exibir os resultados da pesquisa -->
+    <div id="searchDropdown" class="dropdown-menu w-100" style="display: none; position: absolute; top: 100%; left: 0;"></div>
+</form>
+
+<!-- Topbar Navbar -->
+<!-- Lista de navegação da barra superior -->
+<ul class="navbar-nav ml-auto">
+    <!-- Separador visual entre os itens da barra de navegação -->
+    <div class="topbar-divider d-none d-sm-block"></div>
+
+    <!-- Nav Item - Informações do Usuário -->
+    <!-- Dropdown para exibir as opções do usuário, como editar dados, alterar senha e sair -->
+    <li class="nav-item dropdown no-arrow">
+        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="mr-4 d-none d-lg-inline text-gray-600 small">@Model.Nome</span> <!-- Nome do usuário -->
+            <img class="img-profile rounded-circle" src="~/img/profile-img.png"> <!-- Imagem do perfil -->
+        </a>
+
+        <!-- Dropdown - Informações do Usuário -->
+        <!-- Menu suspenso com as opções do usuário -->
+        <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+             aria-labelledby="userDropdown">
+            <!-- Link para editar os dados do usuário -->
+            <a class="dropdown-item" asp-controller="Usuario" asp-action="AtualizarUsuario" asp-route-id="@Model.UsuarioId">
+                <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i> <!-- Ícone de usuário -->
+                Editar Dados
+            </a>
+            <!-- Link para alterar a senha -->
+            <a class="dropdown-item" asp-controller="Usuario" asp-action="AlterarSenha" asp-route-id="@Model.UsuarioId">
+                <i class="fas fa-key fa-sm fa-fw mr-2 text-gray-400"></i> <!-- Ícone de chave -->
+                Alterar Senha
+            </a>
+            <div class="dropdown-divider"></div> <!-- Separador no menu -->
+            <!-- Link para sair (abre um modal confirmando o logout) -->
+            <a class="dropdown-item" data-toggle="modal" data-target="#logoutModal">
+                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> <!-- Ícone de sair -->
+                Sair
+            </a>
+        </div>
+    </li>
+</ul>
+
+<!-- Logout Modal-->
+<!-- Modal de confirmação para sair da conta -->
+<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Deseja sair agora?</h5> <!-- Título do modal -->
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span> <!-- Ícone para fechar o modal -->
+                </button>
+            </div>
+            <div class="modal-body">Selecione "Sair" abaixo se estiver pronto para encerrar sua sessão atual.</div> <!-- Corpo do modal -->
+            <div class="modal-footer">
+                <!-- Botão para cancelar e fechar o modal -->
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
+                <!-- Link para chamar a ação de sair da aplicação -->
+                <a class="btn btn-primary" asp-controller="Login" asp-action="Sair">Sair</a>
+            </div>
+        </div>
+    </div>
+</div>

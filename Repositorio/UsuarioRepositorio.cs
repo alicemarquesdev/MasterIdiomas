@@ -6,6 +6,15 @@ using System.Globalization;
 
 namespace MasterIdiomas.Repositorio
 {
+    // Classe responsável pelas operações de acesso ao banco de dados relacionadas aos usuários
+    // - VerificarUsuarioExistentePorEmailAsync(string email) - Verifica se já existe um usuário cadastrado com o e-mail fornecido
+    // - BuscarUsuarioPorIdAsync(int id) - Busca um usuário específico pelo seu ID
+    // - AddUsuarioAsync(UsuarioModel usuario) - Adiciona um novo usuário ao banco de dados, verificando se o e-mail já está em uso e definindo a senha com hash
+    // - AtualizarUsuarioAsync(UsuarioModel usuario) - Atualiza os dados de um usuário existente, garantindo que o e-mail não seja duplicado
+    // - RemoverUsuario(int id) - Remove um usuário do banco de dados com base no seu ID
+    // - AlterarSenhaAsync(AlterarSenhaModel alterarSenhaModel) - Altera a senha do usuário, verificando se a senha atual é válida e garantindo que a nova senha seja diferente
+    // - RedefinirSenha(int id, string novaSenha) - Redefine a senha de um usuário com base no seu ID e a nova senha fornecida
+
     public class UsuarioRepositorio : IUsuarioRepositorio
     {
         private readonly BancoContext _context;
@@ -16,27 +25,26 @@ namespace MasterIdiomas.Repositorio
         }
 
         // Buscar usuário por e-mail
-        public async Task<UsuarioModel> BuscarUsuarioExistenteAsync(string email)
+        public async Task<UsuarioModel?> VerificarUsuarioExistentePorEmailAsync(string email)
         {
             try
             {
-                return await _context.Usuarios
-                    .FirstOrDefaultAsync(x => x.Email == email);
+                // Verifica se o e-mail já existe no banco de dados
+                return await _context.Usuarios.FirstOrDefaultAsync(x => x.Email == email);
             }
             catch (Exception ex)
             {
-                // Mensagem de erro amigável
                 throw new Exception("Ocorreu um erro ao buscar o usuário. Tente novamente mais tarde.", ex);
             }
         }
 
         // Buscar usuário por ID
-        public async Task<UsuarioModel> BuscarUsuarioPorIdAsync(int id)
+        public async Task<UsuarioModel?> BuscarUsuarioPorIdAsync(int id)
         {
             try
             {
-                return await _context.Usuarios
-                    .FirstOrDefaultAsync(x => x.UsuarioId == id);
+                // Busca o usuário no banco com base no ID fornecido
+                return await _context.Usuarios.FirstOrDefaultAsync(x => x.UsuarioId == id);
             }
             catch (Exception ex)
             {
@@ -47,71 +55,101 @@ namespace MasterIdiomas.Repositorio
         // Adicionar um novo usuário
         public async Task AddUsuarioAsync(UsuarioModel usuario)
         {
-            // Verificar se o usuário já existe com base no e-mail
-            var usuarioExistente = await BuscarUsuarioExistenteAsync(usuario.Email);
-
-            if (usuarioExistente != null)
-            {
-                throw new Exception("Já existe um usuário registrado com este e-mail.");
-            }
-
-            // Definir senha com hash
-            usuario.SetSenhaHash();
-            TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
-            usuario.Nome = textInfo.ToTitleCase(usuario.Nome.ToLower());
-            usuario.Email = usuario.Email.ToLower();
-            usuario.DataCadastro = DateTime.Now;
-
-            // Adicionar o usuário no banco de dados
-            _context.Usuarios.Add(usuario);
-            await _context.SaveChangesAsync();
-        }
-
-        // Atualizar dados do usuário
-        public async Task AtualizarUsuarioAsync(UsuarioModel usuario)
-        {
-            if (usuario == null)
-            {
-                throw new ArgumentNullException(nameof(usuario), "Os dados do usuário não foram fornecidos.");
-            }
-
-            // Verificar se o usuário já existe com base no e-mail
-            var usuarioExistente = await BuscarUsuarioExistenteAsync(usuario.Email);
-
-            if (usuarioExistente != null)
-            {
-                throw new Exception("Já existe um usuário registrado com este e-mail.");
-            }
-
             try
             {
-                // Busca o usuário no banco de dados
-                UsuarioModel usuarioDb = await BuscarUsuarioPorIdAsync(usuario.UsuarioId);
-
-                if (usuarioDb == null)
+                // Verifica se já existe um usuário com o mesmo e-mail
+                var usuarioExistente = await VerificarUsuarioExistentePorEmailAsync(usuario.Email);
+                if (usuarioExistente != null)
                 {
-                    throw new KeyNotFoundException("Usuário não encontrado para atualização.");
+                    throw new Exception("Já existe um usuário com esse e-mail.");
                 }
 
-                // Atualizar os dados do usuário (não altera DataCadastro, pois é a data de criação)
-                usuarioDb.Nome = usuario.Nome;
-                usuarioDb.Email = usuario.Email;
+                // Define a senha com hash
+                usuario.SetSenhaHash();
 
-                // Salvar alterações no banco de dados
-                _context.Usuarios.Update(usuarioDb);
-                await _context.SaveChangesAsync();
-            }
-            catch (ArgumentNullException ex)
-            {
-                throw new ArgumentNullException("Os dados fornecidos para atualização são inválidos.", ex);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                throw new KeyNotFoundException("O usuário não foi encontrado no banco de dados.", ex);
+                // Formata nome e e-mail
+                TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
+                usuario.Nome = textInfo.ToTitleCase(usuario.Nome.ToLower());
+                usuario.Email = usuario.Email.ToLower();
+                usuario.DataCadastro = DateTime.Now;
+
+                // Adiciona o usuário ao banco de dados
+                _context.Usuarios.Add(usuario);
+                var result = await _context.SaveChangesAsync();
+
+                if (result <= 0)
+                {
+                    throw new Exception("Nenhuma alteração no banco de dados.");
+                }
             }
             catch (Exception ex)
             {
-                throw new Exception("Ocorreu um erro ao atualizar os dados do usuário. Tente novamente mais tarde.", ex);
+                throw new Exception("Ocorreu um erro ao adicionar o usuário.", ex);
+            }
+        }
+
+        // Atualizar dados do usuário
+        public async Task AtualizarUsuarioAsync(UsuarioSemSenhaModel usuarioSemSenha)
+        {
+            try
+            {
+                // Verifica se o usuário existe com o ID fornecido
+                var usuarioDb = await BuscarUsuarioPorIdAsync(usuarioSemSenha.Id);
+                if (usuarioDb == null)
+                {
+                    throw new Exception("Usuário não encontrado.");
+                }
+
+                // Verifica se o e-mail já está cadastrado para outro usuário, excluindo o do usuário atual
+                var usuarioComEmailExistente = await VerificarUsuarioExistentePorEmailAsync(usuarioSemSenha.Email);
+                if (usuarioComEmailExistente != null && usuarioComEmailExistente.UsuarioId != usuarioDb.UsuarioId)
+                {
+                    throw new Exception("Já existe um usuário com esse e-mail.");
+                }
+
+                // Formata nome e e-mail para garantir consistência
+                TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
+                usuarioDb.Nome = textInfo.ToTitleCase(usuarioSemSenha.Nome.ToLower());
+                usuarioDb.Email = usuarioSemSenha.Email.ToLower();
+                usuarioDb.DataCadastro = DateTime.Now;
+                usuarioDb.Genero = usuarioSemSenha.Genero;
+                usuarioDb.DataNascimento = usuarioSemSenha.DataNascimento;
+
+                // Atualiza o usuário no banco de dados
+                _context.Usuarios.Update(usuarioDb);
+                var result = await _context.SaveChangesAsync();
+
+                if (result <= 0)
+                {
+                    throw new Exception("Nenhuma alteração no banco de dados.");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Ocorreu um erro ao atualizar o usuário.", ex);
+            }
+        }
+
+        // Remover usuário
+        public async Task<bool> RemoverUsuario(int id)
+        {
+            try
+            {
+                // Verifica se o usuário existe com o ID fornecido
+                var usuarioExistente = await BuscarUsuarioPorIdAsync(id);
+                if (usuarioExistente == null)
+                {
+                    throw new Exception("Usuário não encontrado.");
+                }
+
+                // Remove o usuário do banco de dados
+                _context.Usuarios.Remove(usuarioExistente);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao remover usuário. Tente novamente mais tarde.", ex);
             }
         }
 
@@ -120,55 +158,62 @@ namespace MasterIdiomas.Repositorio
         {
             try
             {
-                UsuarioModel usuarioDB = await BuscarUsuarioPorIdAsync(alterarSenhaModel.Id);
+                // Busca o usuário no banco de dados usando o ID fornecido
+                UsuarioModel? usuarioDb = await BuscarUsuarioPorIdAsync(alterarSenhaModel.Id);
 
-                if (usuarioDB == null)
+                if (usuarioDb == null)
                 {
                     throw new Exception("Usuário não encontrado para alteração de senha.");
                 }
 
-                // Verificar se a senha atual é válida
-                if (!usuarioDB.SenhaValida(alterarSenhaModel.SenhaAtual))
+                // Verifica se a senha atual informada é válida
+                if (!usuarioDb.SenhaValida(alterarSenhaModel.SenhaAtual))
                 {
                     throw new Exception("A senha atual informada não está correta.");
                 }
 
-                // Verificar se a nova senha é diferente da atual
-                if (usuarioDB.SenhaValida(alterarSenhaModel.NovaSenha))
+                // Verifica se a nova senha é diferente da senha atual
+                if (usuarioDb.SenhaValida(alterarSenhaModel.NovaSenha))
                 {
                     throw new Exception("A nova senha não pode ser igual à senha atual.");
                 }
 
-                // Definir a nova senha com hash
-                usuarioDB.SetNovaSenha(alterarSenhaModel.NovaSenha);
+                // Define a nova senha com hash
+                usuarioDb.SetNovaSenha(alterarSenhaModel.NovaSenha);
 
-                // Atualizar senha no banco de dados
-                _context.Usuarios.Update(usuarioDB);
+                // Atualiza a senha no banco de dados
+                _context.Usuarios.Update(usuarioDb);
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
-                // Melhorando o tratamento de exceções
-                throw new Exception("Ocorreu um erro ao alterar a senha. Tente novamente mais tarde.", ex);
+                throw new Exception("Ocorreu um erro ao alterar a senha do usuário.", ex);
             }
         }
 
-        public async Task<bool> RemoverUsuario(int id)
+        // Redefinir senha do usuário
+        public async Task<bool> RedefinirSenha(int id, string novaSenha)
         {
             try
             {
-                UsuarioModel usuario = await BuscarUsuarioPorIdAsync(id);
+                // Verifica se o usuário existe com o ID fornecido
+                var usuarioDb = await BuscarUsuarioPorIdAsync(id);
+                if (usuarioDb == null)
+                {
+                    throw new ArgumentNullException("Usuário não encontrado para redefinir a senha.");
+                }
 
-                if (usuario == null)
-                    throw new Exception("Usuário não encontrado para remoção.");
+                // Define a nova senha com hash
+                usuarioDb.SetNovaSenha(novaSenha);
 
-                _context.Usuarios.Remove(usuario);
+                // Atualiza a senha do usuário no banco de dados
+                _context.Usuarios.Update(usuarioDb);
                 await _context.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
             {
-                throw new Exception("Erro ao remover usuário. Tente novamente mais tarde.", ex);
+                throw new Exception("Erro ao redefinir senha. Tente novamente mais tarde.", ex);
             }
         }
     }

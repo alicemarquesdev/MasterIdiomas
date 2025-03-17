@@ -1,15 +1,10 @@
 ﻿namespace MasterIdiomas.Enums
 {
-    // Enum que define o status do curso
+    // Define uma enumeração para representar o status de um curso.
     public enum StatusCursoEnum
     {
-        // Curso em andamento
-        EmAndamento = 0,
-
-        // Curso concluído
-        Concluído = 1,
-
-        // Curso cancelado
-        Cancelado = 2
+        EmAndamento = 0, // Curso em andamento
+        Concluido = 1,   // Curso concluído
+        Cancelado = 2    // Curso cancelado
     }
 }
