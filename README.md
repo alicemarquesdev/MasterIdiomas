@@ -6,8 +6,6 @@ funcionalidades essenciais para a administração acadêmica e operacional.
 O sistema fornece uma interface intuitiva para cadastro, edição, exclusão e visualização de dados, 
 além de contar com recursos de segurança e controle de acesso.
 
----
-
 ## Principais Funcionalidades
 - Gerenciamento CRUD completo de cursos, professores, alunos e usuários, com validações de dados e relacionamentos entre registros.
 - **Sistema de Login**: Sistema de login seguro, com autenticação baseada em cookies e verificação de identidade, garantindo acesso autorizado ao sistema.
@@ -21,15 +19,16 @@ além de contar com recursos de segurança e controle de acesso.
 - **Sessão do Usuário**: Gerenciamento da sessão do usuário com armazenamento seguro em cookies, garantindo que o usuário permaneça autenticado durante a navegação.
 - **Logs de Atividade do Usuário**: Logs de atividades do usuário registrados com Serilog, para monitoramento e diagnóstico
 
----
 
 
 ## Tecnologias Usadas
 
-- C# / ASP.NET Core
-- Banco de Dados SQL Server
-- HTML, CSS, JavaScript, Bootstrap
-- Outras tecnologias, bibliotecas ou frameworks
+### **Back-End**
+C# | ASP.NET Core MVC | Entity Framework Core | SQL Server
+
+### **Front-End**
+HTML | CSS | Bootstrap | jQuery | JavaScript
+
 
 ## Como Rodar Localmente
 
