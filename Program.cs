@@ -3,7 +3,7 @@ using MasterIdiomas.Helper;
 using MasterIdiomas.Repositorio;
 using MasterIdiomas.Repositorio.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+using Serilog;
 
 namespace MasterIdiomas
 {
@@ -11,7 +11,15 @@ namespace MasterIdiomas
     {
         public static void Main(string[] args)
         {
+            Log.Logger = new LoggerConfiguration()
+              .WriteTo.Console() // Logs no Console
+              .WriteTo.File("logs/app.log", rollingInterval: RollingInterval.Day) // Logs em arquivo
+              .CreateLogger();
+
             var builder = WebApplication.CreateBuilder(args);
+
+            // Adicionar Serilog como provedor de logs
+            builder.Host.UseSerilog();
 
             // Adicionar serviços à aplicação
             ConfigureServices(builder);
@@ -24,6 +32,7 @@ namespace MasterIdiomas
             // Migração automática do banco de dados
             ApplyDatabaseMigrations(app);
 
+            // Executar a aplicação
             app.Run();
         }
 
@@ -86,16 +95,7 @@ namespace MasterIdiomas
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            // Adicionar CSP (Content Security Policy)
-            // Evitar ataques de XSS e injeção de scripts bloqueando fontes de conteúdo não autorizadas.
-            app.Use(async (context, next) =>
-            {
-                context.Response.Headers.TryAdd("Content-Security-Policy",
-                "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-src 'none';");
-                await next();
-            });
-
-            // Captura o erro 400 (Bad Request) devido à falha no token
+                       // Captura o erro 400 (Bad Request) devido à falha no token
             app.UseStatusCodePagesWithRedirects("/Home/Error");
 
             app.UseRouting();
