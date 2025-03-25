@@ -29,16 +29,8 @@ namespace MasterIdiomas.Repositorio
         // Verificar se o professor já existe com base em email e nome
         public async Task<bool> VerificarProfessorExistenteAsync(string email, string nome)
         {
-            try
-            {
                 return await _context.Professores
-                    .Select(x => x.Email == email && x.Nome == nome).FirstOrDefaultAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao verificar a existência do professor.");
-                throw new Exception("Erro ao verificar a existência do professor.", ex);
-            }
+                    .AnyAsync(x => x.Email == email && x.Nome == nome);
         }
 
         // Buscar professor por ID, incluindo a quantidade de cursos

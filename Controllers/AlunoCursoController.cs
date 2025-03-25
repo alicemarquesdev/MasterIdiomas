@@ -36,7 +36,7 @@ namespace MasterIdiomas.Controllers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        // Método para adicionar um aluno a um curso
+        // Método para adicionar um aluno a um curso, usando fetch
         [HttpPost]
         public async Task<IActionResult> AddAlunoAoCurso(int alunoId, int cursoId)
         {
@@ -64,7 +64,6 @@ namespace MasterIdiomas.Controllers
                 // Adiciona o aluno ao curso
                 await _alunoCursoRepositorio.AddAlunoAoCursoAsync(alunoDb, cursoDb);
 
-                // Exibe mensagem de sucesso
                 return Ok(new { mensagem = "Aluno adicionado ao curso com sucesso!" });
             }
             catch (Exception ex)
@@ -99,8 +98,6 @@ namespace MasterIdiomas.Controllers
                 // Remove o aluno do curso
                 await _alunoCursoRepositorio.RemoverAlunoDoCursoAsync(alunoId, cursoId);
 
-
-                // Exibe mensagem de sucesso
                 return Ok(new { mensagem = "Aluno removido do curso com sucesso!" });
             }
             catch (Exception ex)

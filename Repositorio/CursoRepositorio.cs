@@ -145,11 +145,9 @@ namespace MasterIdiomas.Repositorio
             try
             {
                 // Verifica se já existe um curso com o mesmo idioma, turno e nível
-                var cursoExistente = await _context.Cursos
-                    .Where(x => x.Idioma == idioma && x.Turno == turno && x.Nivel == nivel && x.CursoId != cursoId)
-                    .FirstOrDefaultAsync();
+               return await _context.Cursos
+                    .AnyAsync(x => x.Idioma == idioma && x.Turno == turno && x.Nivel == nivel && x.CursoId != cursoId);
 
-                return cursoExistente != null; // Retorna true se existir, caso contrário false
             }
             catch (Exception ex)
             {
@@ -198,7 +196,7 @@ namespace MasterIdiomas.Repositorio
                     throw new Exception("Erro ao adicionar o curso. Tente novamente.");
                 }
             }
-            catch(InvalidOperationException ex)
+            catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex, "Erro ao adicionar o curso.");
                 throw new InvalidOperationException(ex.Message);

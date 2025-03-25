@@ -97,6 +97,7 @@ namespace MasterIdiomas
 
             // Captura o erro 400 (Bad Request) devido à falha no token
             app.UseStatusCodePagesWithRedirects("/Home/Error");
+
             app.UseRouting();
             app.UseSession();
             app.UseAuthorization();

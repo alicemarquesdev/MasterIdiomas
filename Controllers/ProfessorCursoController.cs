@@ -30,7 +30,7 @@ namespace MasterIdiomas.Controllers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger)); // Verifica se o logger foi passado
         }
 
-        // Método para adicionar um professor a um curso
+        // Método para adicionar um professor a um curso, usando fetch
         [HttpPost]
         public async Task<IActionResult> AddProfessorAoCurso(int professorId, int cursoId)
         {
@@ -81,7 +81,7 @@ namespace MasterIdiomas.Controllers
             }
         }
 
-        // Método para remover um professor de um curso
+        // Método para remover um professor de um curso, usando fetch
         [HttpPost]
         public async Task<IActionResult> RemoverProfessorDoCurso(int professorId, int cursoId)
         {
