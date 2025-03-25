@@ -26,7 +26,7 @@
                                         </p>
                                     </div>
                                     <!-- Formulário para enviar e-mail de redefinição de senha -->
-                                    <form class="user" asp-controller="Login" asp-action="EnviarLinkParaRedefinirSenha" method="post">
+                                    <form class="user" asp-controller="Login" asp-action="EnviarLinkParaRedefinirSenha" asp-antiforgery="true"  method="post">
                                         <!-- Campo de E-mail -->
                                         <div class="form-group">
                                             <input type="email" class="form-control form-control-user" name="email" placeholder="Digite seu email">

@@ -18,11 +18,13 @@ namespace MasterIdiomas.Repositorio
     public class AlunoRepositorio : IAlunoRepositorio
     {
         private readonly BancoContext _context;
+        private readonly ILogger<AlunoRepositorio> _logger;
 
         // Construtor para injeção do contexto do banco de dados
-        public AlunoRepositorio(BancoContext context)
+        public AlunoRepositorio(BancoContext context, ILogger<AlunoRepositorio> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // Método para buscar um aluno específico pelo seu ID
@@ -33,18 +35,13 @@ namespace MasterIdiomas.Repositorio
                 // Busca o aluno pelo ID e inclui os cursos associados
                 var aluno = await _context.Alunos.FirstOrDefaultAsync(x => x.AlunoId == id);
 
-                // Se o aluno for encontrado, calcula a quantidade de cursos relacionados
-                if (aluno != null)
-                {
-                    aluno.QuantidadeCursos = aluno.AlunoCurso?.Count() ?? 0;
-                }
-
                 return aluno;
             }
             catch (Exception ex)
             {
                 // Tratamento de exceção em caso de falha na busca
-                throw new Exception("Erro ao buscar o aluno. Tente novamente mais tarde.", ex);
+                _logger.LogError(ex, "Erro ao buscar o aluno.");
+                throw new Exception("Erro ao buscar o aluno.", ex);
             }
         }
 
@@ -71,7 +68,8 @@ namespace MasterIdiomas.Repositorio
             catch (Exception ex)
             {
                 // Caso ocorra erro, lançamos uma exceção personalizada
-                throw new Exception("Erro ao buscar todos os alunos. Tente novamente mais tarde.", ex);
+                _logger.LogError(ex, "Erro ao buscar todos os alunos.");
+                throw new Exception("Erro ao buscar todos os alunos.", ex);
             }
         }
 
@@ -88,7 +86,8 @@ namespace MasterIdiomas.Repositorio
             catch (Exception ex)
             {
                 // Caso ocorra erro, lançamos uma exceção personalizada
-                throw new Exception("Erro ao verificar a existência do aluno. Tente novamente mais tarde.", ex);
+                _logger.LogError(ex, "Erro ao verificar a existência do aluno.");
+                throw new Exception("Erro ao verificar a existência do aluno.", ex);
             }
         }
 
@@ -101,7 +100,7 @@ namespace MasterIdiomas.Repositorio
 
                 if (alunoExistente != null)
                 {
-                    throw new Exception($"Já existe um aluno com o mesmo nome e data de nascimento.");
+                    throw new InvalidOperationException($"Já existe um aluno com o mesmo nome e data de nascimento.");
                 }
 
                 // Normaliza o nome do aluno, para garantir que esteja em formato de título
@@ -119,10 +118,16 @@ namespace MasterIdiomas.Repositorio
                     throw new Exception("Nenhum aluno adicionado ao banco de dados");
                 }
             }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Erro ao adicionar aluno.");
+                throw new Exception(ex.Message);
+            }
             catch (Exception ex)
             {
                 // Caso ocorra erro na adição do aluno, lança uma exceção personalizada
-                throw new Exception($"Erro ao adicionar aluno: {ex.Message}", ex);
+                _logger.LogError(ex, "Erro ao adicionar aluno.");   
+                throw new Exception("Erro ao adicionar aluno.", ex);
             }
         }
 
@@ -142,7 +147,7 @@ namespace MasterIdiomas.Repositorio
                 var alunoDuplicado = await VerificarAlunoExistenteAsync(aluno.Nome, aluno.DataNascimento);
                 if (alunoDuplicado != null && alunoDuplicado.AlunoId != aluno.AlunoId)
                 {
-                    throw new Exception("Já existe um aluno com o mesmo nome e data de nascimento.");
+                    throw new InvalidOperationException("Já existe um aluno com o mesmo nome e data de nascimento.");
                 }
 
                 // Capitaliza o nome do aluno
@@ -160,10 +165,16 @@ namespace MasterIdiomas.Repositorio
                     throw new Exception($"Nenhum aluno atualizado ao banco de dados");
                 }
             }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Erro ao atualizar aluno.");
+                throw new Exception(ex.Message);
+            }
             catch (Exception ex)
             {
                 // Caso ocorra erro na atualização, lança uma exceção personalizada
-                throw new Exception($"Erro ao atualizar aluno:", ex);
+                _logger.LogError(ex, "Erro ao atualizar aluno.");
+                throw new Exception("Erro ao atualizar aluno.", ex);
             }
         }
 
@@ -188,7 +199,8 @@ namespace MasterIdiomas.Repositorio
             catch (Exception ex)
             {
                 // Caso ocorra erro na remoção, lança uma exceção personalizada
-                throw new Exception($"Erro ao remover aluno:", ex);
+                _logger.LogError(ex, "Erro ao remover aluno.");
+                throw new Exception("Erro ao remover aluno.", ex);
             }
         }
 
@@ -203,7 +215,8 @@ namespace MasterIdiomas.Repositorio
             catch (Exception ex)
             {
                 // Caso ocorra erro na contagem, lança uma exceção personalizada
-                throw new Exception("Erro ao contar o total de alunos. Tente novamente mais tarde.", ex);
+                _logger.LogError(ex, "Erro ao contar o total de alunos.");
+                throw new Exception("Erro ao contar o total de alunos.", ex);
             }
         }
 

@@ -1,5 +1,4 @@
 ﻿// Ao criar o usuario, o script valida a senha e a confirmação de Senha
-.
 
 // Adiciona um evento de escuta ao formulário com o ID "formUsuarioSenha" para capturar o evento de envio (submit)
 document.getElementById("formUsuarioSenha").addEventListener("submit", function (event) {

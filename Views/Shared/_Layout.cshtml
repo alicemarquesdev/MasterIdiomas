@@ -51,8 +51,8 @@
                     @if (mensagem != null)
                     {
                         <div class="container alert @classe alert-dismissible fade show d-flex align-items-center" role="alert">
-                            <div class="me-auto">@mensagem</div>
-                            <button type="button" class="btn-close btn-close-dark close-alert ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                            <div>@mensagem</div>
+                            <button type="button" class="btn-close btn-close-dark close-alert ms-auto p-3" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     }
 
@@ -94,6 +94,7 @@
                 <div class="modal-body">
                     <p>Tem certeza que deseja remover <span id="itemNome"></span>?</p>
                     <form method="post">
+                        <input type="hidden" name="__RequestVerificationToken" value="valor_do_token_aqui">
                         <input type="hidden" name="id" id="itemId">
                         <input type="hidden" id="cursoId" name="cursoId"> <!-- Para remover aluno de um curso -->
                         <button type="submit" class="btn btn-danger w-100 mb-1">Remover</button>
@@ -109,6 +110,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
     <script src="~/js/sb-admin-2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Plugins de Página -->
     <script src="~/vendor/chart.js/Chart.min.js"></script>
@@ -117,8 +119,6 @@
 
     <!-- Scripts Customizados -->
     <script src="~/js/demo/datatables-demo.js"></script>
-    <script src="~/js/demo/chart-area-demo.js"></script>
-    <script src="~/js/demo/chart-pie-demo.js"></script>
     <script src="~/js/remocao-modal.js"></script>
     <script src="~/js/barra-pesquisa.js"></script>
 

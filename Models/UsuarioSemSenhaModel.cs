@@ -10,10 +10,11 @@ namespace MasterIdiomas.Models
 
         [Required(ErrorMessage = "Por favor, insira o nome.")]
         [StringLength(30, ErrorMessage = "O nome deve ter no máximo 30 caracteres.")]
+        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "O nome deve conter apenas letras e espaços.")]
         public required string Nome { get; set; }
 
         [Required(ErrorMessage = "O e-mail é obrigatório.")]
-        [EmailAddress(ErrorMessage = "O e-mail informado não é válido.")]
+        [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "O email informado não é válido.")]
         public required string Email { get; set; }
 
         [Required(ErrorMessage = "Por favor, selecione o gênero.")]

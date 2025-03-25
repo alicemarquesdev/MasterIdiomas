@@ -61,7 +61,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <!-- Formulário para editar aluno -->
-                <form asp-controller="Aluno" asp-action="AtualizarAluno" method="post">
+                <form asp-controller="Aluno" asp-action="AtualizarAluno" asp-antiforgery="true" method="post">
                     <div class="modal-body">
                         <input type="hidden" asp-for="Aluno.AlunoId" /> <!-- Campo oculto para ID do aluno -->
                         <!-- Campo para editar o nome do aluno -->
@@ -121,7 +121,7 @@
                     <thead>
                         <tr>
                             <th>Idioma</th>
-                            <th>Data de Início</th>
+                            <th>Início</th>
                             <th>Turno</th>
                             <th>Nível</th>
                             <th>Professor</th>
@@ -144,19 +144,16 @@
                                     <td>@curso.Turno</td>
                                     <td>@curso.Nivel</td>
                                     <td>@(curso.Professor != null ? curso.Professor.Nome : "-")</td>
-                                    <td>@curso.CargaHoraria</td>
+                                    <td>@curso.CargaHoraria </td>
                                     <td>@curso.Status</td>
                                     <td>@curso.QuantidadeAlunos</td>
                                     <td>
-                                        <!-- Botão para remover o aluno do curso -->
-                                        <button class="btn-sm btn-danger"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#modalRemocao"
-                                                data-id="@Model.Aluno.AlunoId"
-                                                data-nome="@Model.Aluno.Nome"
-                                                data-tipo="removerAlunoDoCurso"
-                                                data-curso-id="@curso.CursoId">
-                                            Remover Aluno do Curso
+                                        <!-- Botão para remover aluno do curso -->
+                                        <button class="btn-sm btn-danger btn-aluno-acao"
+                                                data-aluno-id="@Model.Aluno.AlunoId"
+                                                data-curso-id="@curso.CursoId"
+                                                data-tipo="remover">
+                                            Desmatricular
                                         </button>
                                     </td>
                                 </tr>
@@ -186,7 +183,7 @@
                     <thead>
                         <tr>
                             <th>Idioma</th>
-                            <th>Data de Início</th>
+                            <th>Início</th>
                             <th>Turno</th>
                             <th>Nível</th>
                             <th>Professor</th>
@@ -213,12 +210,13 @@
                                     <td>@curso.Status</td>
                                     <td>@curso.QuantidadeAlunos</td>
                                     <td>
-                                        <!-- Formulário para adicionar o aluno ao curso -->
-                                        <form asp-controller="AlunoCurso" asp-action="AddAlunoAoCurso" method="post">
-                                            <input type="hidden" name="alunoId" value="@Model.Aluno.AlunoId" />
-                                            <input type="hidden" name="cursoId" value="@curso.CursoId" />
-                                            <button type="submit" class="btn-sm btn-primary">Adicionar Aluno</button>
-                                        </form>
+                                        <!-- Adicionar o aluno ao curso -->
+                                        <button class="btn-sm btn-primary btn-aluno-acao"
+                                                data-aluno-id="@Model.Aluno.AlunoId"
+                                                data-curso-id="@curso.CursoId"
+                                                data-tipo="adicionar">
+                                            Matricular
+                                        </button>
                                     </td>
                                 </tr>
                             }
@@ -235,3 +233,7 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/js/aluno-curso.js"></script>
+}

@@ -18,7 +18,7 @@ namespace MasterIdiomas.Controllers
     // incluindo os alunos matriculados e os alunos disponíveis para inscrição.
     // GET Idioma(string idioma) - Retorna a view com cursos de um idioma passado como parametro.
 
-    // POST AddCurso(CursoModel curso) - Adiciona um novo curso ao banco de dados caso os dados sejam válidos.
+    // POST AddCurso(CursoModel curso) - Adiciona um novo curso ao banco de dadosk caso os dados sejam válidos.
     // POST AtualizarCurso(CursoModel curso) - Atualiza as informações de um curso existente no banco de dados.
     // POST RemoverCurso(int id) - Remove um curso do banco de dados com base no ID fornecido.
 
@@ -69,7 +69,7 @@ namespace MasterIdiomas.Controllers
                     Idiomas = _idiomasSettings.Idiomas, // Passando a lista de idiomas para o ViewModel
                     Cursos = await _cursoRepositorio.BuscarTodosCursosAsync()
                     ?? throw new ArgumentNullException("Lista de cursos retornou null"),
-                    Professores = await _professorRepositorio.BuscarTodosProfessoresAsync()
+                    Professores = await _professorRepositorio.BuscarProfessorSemCursoAsync()
                     ?? throw new ArgumentNullException("Lista de professores retornou null")
                 };
 
@@ -111,7 +111,7 @@ namespace MasterIdiomas.Controllers
                     ?? throw new ArgumentNullException("Lista de alunos do curso retornou null"),
                     AlunosNaoInscritosNoCurso = await _alunoCursoRepositorio.BuscarAlunosNaoInscritosNoCursoAsync(curso.CursoId)
                     ?? throw new ArgumentNullException("Lista de alunos não inscritos no curso retornou null"),
-                    Professores = await _professorRepositorio.BuscarTodosProfessoresAsync()
+                    Professores = await _professorRepositorio.BuscarProfessorSemCursoAsync()
                     ?? throw new ArgumentNullException("Lista de professores retornou null")
                 };
 
@@ -156,7 +156,7 @@ namespace MasterIdiomas.Controllers
                     Idiomas = _idiomasSettings.Idiomas, // Passando a lista de idiomas para o ViewModel
                     Cursos = await _cursoRepositorio.BuscarCursosPorIdiomaAsync(idioma)
                     ?? throw new ArgumentNullException("Lista de cursos por idioma retornou null"),
-                    Professores = await _professorRepositorio.BuscarTodosProfessoresAsync()
+                    Professores = await _professorRepositorio.BuscarProfessorSemCursoAsync()
                     ?? throw new ArgumentNullException("Lista de professores retornou null")
                 };
 
@@ -165,13 +165,14 @@ namespace MasterIdiomas.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao carregar view Idioma");
-                TempData["MensagemErro"] = "Erro ao carregar página, tente novamente.";
+                TempData["MensagemErro"] = "Erro ao carregar página Idioma, tente novamente.";
                 return RedirectToAction("Index", "Home");
             }
         }
 
         // Método para adicionar um novo curso
         [HttpPost]
+        [ValidateAntiForgeryToken]  // Valida o Token Anti-Forgery
         public async Task<IActionResult> AddCurso(CursoModel curso, int? professorId)
         {
             try
@@ -196,15 +197,24 @@ namespace MasterIdiomas.Controllers
             }
             catch (Exception ex)
             {
-                // Log de erro ao tentar adicionar o curso
-                _logger.LogError(ex, "Erro ao adicionar curso");
-                TempData["MensagemErro"] = $"{ex}";
-                return Redirect(Request.Headers["Referer"].ToString());
+                _logger.LogError(ex, "Erro ao adicionar curso.");
+
+                if (ex.InnerException is InvalidOperationException || ex is InvalidOperationException)
+                {
+                    TempData["MensagemErro"] = ex.Message;  // Exibe a mensagem amigável
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Erro ao adicionar curso, tente novamente.";
+                }
+
+                return RedirectToAction("Cursos");
             }
         }
 
         // Método para atualizar um curso existente
         [HttpPost]
+        [ValidateAntiForgeryToken]  // Valida o Token Anti-Forgery
         public async Task<IActionResult> AtualizarCurso(CursoModel curso)
         {
             try
@@ -224,6 +234,15 @@ namespace MasterIdiomas.Controllers
                     // Mensagem de sucesso conforme o status do curso
                     if (curso.Status == Enums.StatusCursoEnum.Cancelado)
                     {
+                        var cursoAtualizado = await _alunoCursoRepositorio.BuscarAlunosDoCursoAsync(curso.CursoId);
+                        if(cursoAtualizado != null)
+                        {
+                            foreach (var aluno in cursoAtualizado)
+                            {
+                                await _alunoCursoRepositorio.RemoverAlunoDoCursoAsync(aluno.AlunoId, curso.CursoId);
+                            }
+                        }
+                       
                         TempData["MensagemSucesso"] = "Curso atualizado com sucesso! O status do curso foi alterado para Cancelado. Os alunos do curso foram todos removidos.";
                     }
                     else
@@ -240,15 +259,24 @@ namespace MasterIdiomas.Controllers
             }
             catch (Exception ex)
             {
-                // Log de erro ao tentar atualizar o curso
-                _logger.LogError(ex, "Erro ao atualizar curso");
-                TempData["MensagemErro"] = $"{ex}";
+                _logger.LogError(ex, "Erro ao atualizar curso.");
+
+                if (ex.InnerException is InvalidOperationException || ex is InvalidOperationException)
+                {
+                    TempData["MensagemErro"] = ex.Message;  // Exibe a mensagem amigável
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Erro ao atualizar curso, tente novamente.";
+                }
+
                 return Redirect(Request.Headers["Referer"].ToString());
             }
         }
 
         // Método para remover um curso
         [HttpPost]
+        [ValidateAntiForgeryToken]  // Valida o Token Anti-Forgery
         public async Task<IActionResult> RemoverCurso(int id)
         {
             try
@@ -269,18 +297,23 @@ namespace MasterIdiomas.Controllers
                 // Remover o curso do repositório
                 var cursoRemovido = await _cursoRepositorio.RemoverCursoAsync(id);
 
-                // Log de sucesso ao remover o curso
-                _logger.LogInformation($"Curso com ID {id} removido com sucesso.");
-
                 TempData["MensagemSucesso"] = "Curso removido com sucesso!";
-                return RedirectToAction("Cursos");
+                return Redirect(Request.Headers["Referer"].ToString());
             }
             catch (Exception ex)
             {
-                // Log de erro ao tentar remover o curso
-                _logger.LogError(ex, $"Erro ao remover curso com ID {id}");
-                TempData["MensagemErro"] = $"Erro ao remover curso: {ex.Message}";
-                return RedirectToAction("Cursos");
+                _logger.LogError(ex, "Erro ao remover curso.");
+
+                if (ex.InnerException is InvalidOperationException || ex is InvalidOperationException)
+                {
+                    TempData["MensagemErro"] = ex.Message;  // Exibe a mensagem amigável
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Erro ao remover curso, tente novamente.";
+                }
+
+                return Redirect(Request.Headers["Referer"].ToString());
             }
         }
     }

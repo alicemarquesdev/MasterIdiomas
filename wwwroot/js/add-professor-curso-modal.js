@@ -1,22 +1,52 @@
-﻿// Usado para abrir um modal para adicionar professor ao curso
-
-// Aguarda até que o conteúdo da página (DOM) seja completamente carregado
-document.addEventListener("DOMContentLoaded", function () {
-    // Verifica se o modal de adicionar professor está presente no HTML
+﻿document.addEventListener("DOMContentLoaded", function () {
     const modalAddProfessor = document.getElementById('modalAddProfessor');
 
-    // Se o modal estiver presente, adiciona um ouvinte de evento para quando o modal for exibido
+    // Quando o modal for exibido, preenche o campo de ID do curso
     if (modalAddProfessor) {
         modalAddProfessor.addEventListener('show.bs.modal', function (event) {
-            // Quando o modal for mostrado, pega o botão que foi clicado para abrir o modal
             const button = event.relatedTarget;
-
-            // Obtém o valor do atributo 'data-cursoid' do botão, que representa o ID do curso
             const cursoId = button.getAttribute('data-cursoid');
-
-            // Encontra o campo de input escondido (hidden) que irá armazenar o ID do curso
-            // Preenche o campo com o ID do curso que foi obtido do botão
             document.getElementById('cursoIdInput').value = cursoId;
+        });
+    }
+
+    // Lógica para o envio do formulário tradicional
+    const formElement = document.querySelector("#formAdicionarProfessor");
+
+    if (formElement) {
+        formElement.addEventListener("submit", function (event) {
+            event.preventDefault(); // Previne o envio padrão do formulário
+
+            const professorId = document.querySelector("#ProfessorId").value;
+            const cursoId = document.querySelector("#cursoIdInput").value;
+
+            // Validação: verifica se o professor foi selecionado
+            if (!professorId) {
+                return; // Impede o envio do formulário caso o professor não seja selecionado
+            }
+
+            const formData = new FormData(formElement);
+
+            // Realiza o envio via fetch
+            fetch(formElement.action, {
+                method: formElement.method,
+                body: formData
+            })
+                .then(response => {
+                    // Se a requisição não for bem-sucedida, redireciona para a mesma página
+                    if (!response.ok) {
+                        throw new Error('Erro na requisição');
+                    }
+
+                    // Caso o fetch seja bem-sucedido, apenas redireciona
+                    window.location.href = window.location.href;
+                })
+                .then(() => {
+                    window.location.href = window.location.href;
+                })
+                .catch(error => {
+                    window.location.href = window.location.href; // Redireciona para a mesma página
+                });
         });
     }
 });

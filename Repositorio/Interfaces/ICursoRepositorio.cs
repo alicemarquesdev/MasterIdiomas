@@ -22,7 +22,7 @@ namespace MasterIdiomas.Repositorio.Interfaces
         Task<List<CursoModel>> BuscarCursosBarraDePesquisaAsync(string termo);
 
         // Verifica se já existe um curso com o mesmo idioma, turno e nível
-        Task<bool> VerificarCursoExistenteAsync(string idioma, TurnoEnum turno, NivelEnum nivel);
+        Task<bool> VerificarCursoExistenteAsync(string idioma, TurnoEnum turno, NivelEnum nivel, int cursoId);
 
         // Adiciona um novo curso ao sistema
         Task AddCursoAsync(CursoModel curso);

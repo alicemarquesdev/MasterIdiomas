@@ -18,10 +18,12 @@ namespace MasterIdiomas.Repositorio
     public class ProfessorRepositorio : IProfessorRepositorio
     {
         private readonly BancoContext _context;
+        private readonly ILogger<ProfessorRepositorio> _logger;
 
-        public ProfessorRepositorio(BancoContext context)
+        public ProfessorRepositorio(BancoContext context, ILogger<ProfessorRepositorio> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // Verificar se o professor já existe com base em email e nome
@@ -34,7 +36,8 @@ namespace MasterIdiomas.Repositorio
             }
             catch (Exception ex)
             {
-                throw new Exception("Ocorreu um erro ao verificar a existência do professor. Tente novamente mais tarde.", ex);
+                _logger.LogError(ex, "Erro ao verificar a existência do professor.");
+                throw new Exception("Erro ao verificar a existência do professor.", ex);
             }
         }
 
@@ -52,17 +55,12 @@ namespace MasterIdiomas.Repositorio
                 var professor = await _context.Professores
                     .FirstOrDefaultAsync(x => x.ProfessorId == id);
 
-                if (professor != null)
-                {
-                    // Calcula a quantidade de cursos
-                    professor.QuantidadeCursos = professor.Cursos?.Count() ?? 0;
-                }
-
                 return professor;
             }
             catch (Exception ex)
             {
-                throw new Exception("Ocorreu um erro ao buscar o professor. Tente novamente mais tarde.", ex);
+                _logger.LogError(ex, "Erro ao buscar o professor.");
+                throw new Exception("Erro ao buscar o professor.", ex);
             }
         }
 
@@ -77,25 +75,48 @@ namespace MasterIdiomas.Repositorio
                     .OrderBy(p => p.Nome)
                     .ToListAsync();
 
-                // Adiciona a quantidade de cursos para cada professor
-                foreach (var professor in professores)
-                {
-                    professor.QuantidadeCursos = professor.Cursos?.Count() ?? 0;
-                }
+                return professores;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao buscar todos os professores.");
+                throw new Exception("Erro ao listar os professores.", ex);
+            }
+        }
+
+        // Retorna uma lista de todos os professores que não tenha chegado ao limite de cursos 
+        public async Task<List<ProfessorModel>> BuscarProfessorSemCursoAsync()
+        {
+            try
+            {
+                // Buscar todos os professores e seus cursos
+                var professores = await _context.Professores
+                    .Where(x => x.QuantidadeCursos < 3) // Seleciona professores com quantidade menor que a quantidade máxima de cursos por professor.
+                    .Include(p => p.Cursos)  // Inclui os cursos do professor
+                    .OrderBy(p => p.Nome)
+                    .ToListAsync();
 
                 return professores;
             }
             catch (Exception ex)
             {
-                throw new Exception("Ocorreu um erro ao listar os professores. Tente novamente mais tarde.", ex);
+                _logger.LogError(ex, "Erro ao buscar todos os professores.");
+                throw new Exception("Erro ao listar os professores.", ex);
             }
         }
+
 
         // Adicionar um novo professor
         public async Task AddProfessorAsync(ProfessorModel professor)
         {
             try
             {
+                var professorExistente = await VerificarProfessorExistenteAsync(professor.Email, professor.Nome);
+                if (professorExistente)
+                {
+                    throw new InvalidOperationException("Já existe um professor com esse e-mail e nome.");
+                }
+
                 // Definir valores padrão para campos obrigatórios
                 TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
                 professor.Nome = textInfo.ToTitleCase(professor.Nome.ToLower());
@@ -112,9 +133,15 @@ namespace MasterIdiomas.Repositorio
                     throw new Exception("Nenhuma alteração no banco de dados."); // Garante que a operação foi bem-sucedida
                 }
             }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Erro ao adicionar o professor.");
+                throw new InvalidOperationException(ex.Message);
+            }
             catch (Exception ex)
             {
-                throw new Exception("Ocorreu um erro ao adicionar o professor. Tente novamente mais tarde.", ex);
+                _logger.LogError(ex, "Erro ao adicionar o professor.");
+                throw new Exception("Erro ao adicionar o professor.", ex);
             }
         }
 
@@ -124,10 +151,11 @@ namespace MasterIdiomas.Repositorio
             try
             {
                 var professorDb = await BuscarProfessorPorIdAsync(professor.ProfessorId);
-                if(professorDb == null)
+                if (professorDb == null)
                 {
                     throw new Exception("Professor não encontrado no banco de dados");
                 }
+
                 // Atualizar os dados básicos do professor
                 TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
                 professorDb.Nome = textInfo.ToTitleCase(professor.Nome.ToLower());
@@ -136,7 +164,7 @@ namespace MasterIdiomas.Repositorio
                 professorDb.Status = professor.Status;
                 professorDb.DataNascimento = professor.DataNascimento;
 
-                          // Salvar as alterações
+                // Salvar as alterações
                 _context.Professores.Update(professorDb);
                 var result = await _context.SaveChangesAsync(); // Salva as alterações
 
@@ -147,7 +175,8 @@ namespace MasterIdiomas.Repositorio
             }
             catch (Exception ex)
             {
-                throw new Exception("Ocorreu um erro ao atualizar o professor. Tente novamente mais tarde.", ex);
+                _logger.LogError(ex, "Erro ao atualizar o professor.");
+                throw new Exception("Erro ao atualizar o professor.", ex);
             }
         }
 
@@ -156,13 +185,8 @@ namespace MasterIdiomas.Repositorio
         {
             try
             {
-                if (id <= 0)
-                {
-                    throw new ArgumentException("ID inválido.");
-                }
-
                 // Buscar o professor pelo ID
-                var professor = await _context.Professores.FindAsync(id);
+                var professor = await BuscarProfessorPorIdAsync(id);
                 if (professor == null)
                 {
                     throw new Exception("Professor não encontrado.");
@@ -176,6 +200,7 @@ namespace MasterIdiomas.Repositorio
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro ao remover o professor.");
                 throw new Exception("Erro ao remover o professor.", ex);
             }
         }
@@ -189,7 +214,8 @@ namespace MasterIdiomas.Repositorio
             }
             catch (Exception ex)
             {
-                throw new Exception("Ocorreu um erro ao contar os professores. Tente novamente mais tarde.", ex);
+                _logger.LogError(ex, "Erro ao contar os professores");
+                throw new Exception("Erro ao contar os professores", ex);
             }
         }
     }

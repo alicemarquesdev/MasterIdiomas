@@ -11,6 +11,9 @@ namespace MasterIdiomas.Repositorio.Interfaces
         // Retorna uma lista de todos os professores cadastrados
         Task<List<ProfessorModel>> BuscarTodosProfessoresAsync();
 
+        // Retorna uma lista de todos os professores que não tenha chegado ao limite de cursos 
+        Task<List<ProfessorModel>> BuscarProfessorSemCursoAsync();
+
         // Verifica se um professor já existe no sistema com base no e-mail e nome
         Task<bool> VerificarProfessorExistenteAsync(string email, string nome);
 

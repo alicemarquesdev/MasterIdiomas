@@ -78,8 +78,14 @@ namespace MasterIdiomas.Controllers
                 // Loga o erro e exibe uma mensagem genérica
                 _logger.LogError(ex, "Erro ao carregar informações na página inicial");
                 TempData["MensagemErro"] = "Ocorreu um erro ao carregar as informações. Tente novamente mais tarde.";
-                return View();
+                return View("Error");
             }
+        }
+
+        // Exibe a página de erro
+        public IActionResult Error()
+        {
+            return View();
         }
 
         // Método para buscar cursos na barra de pesquisa

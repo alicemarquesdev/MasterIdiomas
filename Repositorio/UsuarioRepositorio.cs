@@ -18,10 +18,12 @@ namespace MasterIdiomas.Repositorio
     public class UsuarioRepositorio : IUsuarioRepositorio
     {
         private readonly BancoContext _context;
+        private readonly ILogger<UsuarioRepositorio> _logger;
 
-        public UsuarioRepositorio(BancoContext context)
+        public UsuarioRepositorio(BancoContext context, ILogger<UsuarioRepositorio> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // Buscar usuário por e-mail
@@ -34,7 +36,8 @@ namespace MasterIdiomas.Repositorio
             }
             catch (Exception ex)
             {
-                throw new Exception("Ocorreu um erro ao buscar o usuário. Tente novamente mais tarde.", ex);
+                _logger.LogError(ex, "Erro ao buscar o usuário.");
+                throw new Exception("Erro ao buscar o usuário.", ex);
             }
         }
 
@@ -48,7 +51,8 @@ namespace MasterIdiomas.Repositorio
             }
             catch (Exception ex)
             {
-                throw new Exception("Ocorreu um erro ao buscar o usuário. Tente novamente mais tarde.", ex);
+                _logger.LogError(ex, "Erro ao buscar o usuário.");
+                throw new Exception("Erro ao buscar o usuário.", ex);
             }
         }
 
@@ -61,7 +65,7 @@ namespace MasterIdiomas.Repositorio
                 var usuarioExistente = await VerificarUsuarioExistentePorEmailAsync(usuario.Email);
                 if (usuarioExistente != null)
                 {
-                    throw new Exception("Já existe um usuário com esse e-mail.");
+                    throw new InvalidOperationException("Já existe um usuário com esse e-mail.");
                 }
 
                 // Define a senha com hash
@@ -82,9 +86,15 @@ namespace MasterIdiomas.Repositorio
                     throw new Exception("Nenhuma alteração no banco de dados.");
                 }
             }
+            catch(InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Erro ao adicionar usuário.");
+                throw new InvalidOperationException(ex.Message);
+            }
             catch (Exception ex)
             {
-                throw new Exception("Ocorreu um erro ao adicionar o usuário.", ex);
+                _logger.LogError(ex, "Erro ao adicionar usuário.");
+                throw new Exception("Erro ao adicionar usuário.", ex);
             }
         }
 
@@ -104,7 +114,7 @@ namespace MasterIdiomas.Repositorio
                 var usuarioComEmailExistente = await VerificarUsuarioExistentePorEmailAsync(usuarioSemSenha.Email);
                 if (usuarioComEmailExistente != null && usuarioComEmailExistente.UsuarioId != usuarioDb.UsuarioId)
                 {
-                    throw new Exception("Já existe um usuário com esse e-mail.");
+                    throw new InvalidOperationException("Já existe um usuário com esse e-mail.");
                 }
 
                 // Formata nome e e-mail para garantir consistência
@@ -124,9 +134,15 @@ namespace MasterIdiomas.Repositorio
                     throw new Exception("Nenhuma alteração no banco de dados.");
                 }
             }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Erro ao atualizar usuário.");
+                throw new InvalidOperationException(ex.Message);
+            }
             catch (Exception ex)
             {
-                throw new Exception("Ocorreu um erro ao atualizar o usuário.", ex);
+                _logger.LogError(ex, "Erro ao atualizar usuário.");
+                throw new Exception("Erro ao atualizar usuário.", ex);
             }
         }
 
@@ -149,7 +165,8 @@ namespace MasterIdiomas.Repositorio
             }
             catch (Exception ex)
             {
-                throw new Exception("Erro ao remover usuário. Tente novamente mais tarde.", ex);
+                _logger.LogError(ex, "Erro ao remover usuário.");
+                throw new Exception("Erro ao remover usuário", ex);
             }
         }
 
@@ -169,13 +186,13 @@ namespace MasterIdiomas.Repositorio
                 // Verifica se a senha atual informada é válida
                 if (!usuarioDb.SenhaValida(alterarSenhaModel.SenhaAtual))
                 {
-                    throw new Exception("A senha atual informada não está correta.");
+                    throw new InvalidOperationException("A senha atual informada não está correta.");
                 }
 
                 // Verifica se a nova senha é diferente da senha atual
                 if (usuarioDb.SenhaValida(alterarSenhaModel.NovaSenha))
                 {
-                    throw new Exception("A nova senha não pode ser igual à senha atual.");
+                    throw new InvalidOperationException("A nova senha não pode ser igual à senha atual.");
                 }
 
                 // Define a nova senha com hash
@@ -185,9 +202,15 @@ namespace MasterIdiomas.Repositorio
                 _context.Usuarios.Update(usuarioDb);
                 await _context.SaveChangesAsync();
             }
+            catch(InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Erro ao alterar senha.");
+                throw new InvalidOperationException(ex.Message);
+            }
             catch (Exception ex)
             {
-                throw new Exception("Ocorreu um erro ao alterar a senha do usuário.", ex);
+                _logger.LogError(ex, "Erro ao alterar senha.");
+                throw new Exception("Erro ao alterar senha.", ex);
             }
         }
 
@@ -213,7 +236,8 @@ namespace MasterIdiomas.Repositorio
             }
             catch (Exception ex)
             {
-                throw new Exception("Erro ao redefinir senha. Tente novamente mais tarde.", ex);
+                _logger.LogError(ex, "Erro ao redefinir senha.");
+                throw new Exception("Erro ao redefinir senha.", ex);
             }
         }
     }

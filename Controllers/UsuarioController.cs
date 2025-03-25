@@ -81,6 +81,7 @@ namespace MasterIdiomas.Controllers
 
         // Ação POST para alterar a senha do usuário
         [HttpPost]
+        [ValidateAntiForgeryToken]  // Valida o Token Anti-Forgery
         public async Task<IActionResult> AlterarSenha(AlterarSenhaModel alterarSenhaModel)
         {
             try
@@ -90,8 +91,8 @@ namespace MasterIdiomas.Controllers
                 // Verifica se a sessão do usuário está válida
                 if (usuarioDb == null)
                 {
-                    TempData["MensagemErro"] = "Sessão do usuário não encontrada.";
-                    return RedirectToAction("Index", "Home");
+                    throw new ArgumentException("Usuario não encontrado.");
+
                 }
 
                 alterarSenhaModel.Id = usuarioDb.UsuarioId;
@@ -99,37 +100,35 @@ namespace MasterIdiomas.Controllers
                 // Valida o modelo de dados
                 if (ModelState.IsValid)
                 {
-                    try
-                    {
-                        // Chama o método para alterar a senha no repositório
-                        await _usuarioRepositorio.AlterarSenhaAsync(alterarSenhaModel);
-                        TempData["MensagemSucesso"] = "Senha alterada com sucesso!";
-                        return RedirectToAction("Index", "Home");
-                    }
-                    catch (Exception ex)
-                    {
-                        // Loga erro e exibe mensagem de erro
-                        _logger.LogError(ex, "Erro ao tentar alterar a senha do usuário.");
-                        TempData["MensagemErro"] = ex.Message;
-                    }
-                }
-                else
-                {
-                    TempData["MensagemErro"] = "Os dados fornecidos são inválidos.";
+                    // Chama o método para alterar a senha no repositório
+                    await _usuarioRepositorio.AlterarSenhaAsync(alterarSenhaModel);
+                    TempData["MensagemSucesso"] = "Senha alterada com sucesso!";
+                    return RedirectToAction("AlterarSenha");
                 }
 
+                TempData["MensagemErro"] = "Os dados fornecidos são inválidos.";
                 return View(alterarSenhaModel); // Retorna à view com os erros de validação
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro inesperado ao tentar alterar a senha.");
-                TempData["MensagemErro"] = "Ocorreu um erro inesperado: " + ex.Message;
-                return RedirectToAction("Index", "Home");
+                _logger.LogError(ex, "Erro ao tentar alterar senha do usuário.");
+
+                if (ex.InnerException is InvalidOperationException || ex is InvalidOperationException)
+                {
+                    TempData["MensagemErro"] = ex.Message;  // Exibe a mensagem amigável
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Erro ao tentar  alterar senha do usuário, tente novamente.";
+                }
+
+                return RedirectToAction("AlterarSenha");
             }
         }
 
         // Ação POST para atualizar os dados do usuário
         [HttpPost]
+        [ValidateAntiForgeryToken]  // Valida o Token Anti-Forgery
         public async Task<IActionResult> AtualizarUsuario(UsuarioSemSenhaModel usuarioSemSenha)
         {
             try
@@ -137,8 +136,7 @@ namespace MasterIdiomas.Controllers
                 if (usuarioSemSenha == null)
                 {
                     // Lança exceção se o modelo estiver nulo
-                    _logger.LogError("Modelo de usuário nulo ao tentar atualizar.");
-                    throw new ArgumentNullException(nameof(usuarioSemSenha), "Modelo de usuário não pode ser nulo.");
+                    throw new ArgumentException("Usuario é nulo.");
                 }
 
                 // Valida o modelo de dados
@@ -154,23 +152,30 @@ namespace MasterIdiomas.Controllers
             }
             catch (Exception ex)
             {
-                // Loga erro e exibe mensagem de erro
-                _logger.LogError(ex, "Erro ao tentar atualizar os dados do usuário.");
-                TempData["MensagemErro"] = "Desculpe. Não conseguimos atualizar seus dados, tente novamente.";
-                return RedirectToAction("Index", "Home");
+                _logger.LogError(ex, "Erro ao tentar atualizar dados do usuário.");
+
+                if (ex.InnerException is InvalidOperationException || ex is InvalidOperationException)
+                {
+                    TempData["MensagemErro"] = ex.Message;  // Exibe a mensagem amigável
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Erro ao tentar atualizar dados do usuário, tente novamente.";
+                }
+
+                return RedirectToAction("AtualizarUsuario", new { id = usuarioSemSenha.Id });
             }
         }
 
         // Ação POST para remover o usuário
         [HttpPost]
+        [ValidateAntiForgeryToken]  // Valida o Token Anti-Forgery
         public async Task<IActionResult> RemoverUsuario(int id)
         {
             try
             {
                 if (id <= 0)
                 {
-                    // Lança exceção se o ID for inválido
-                    _logger.LogError("ID inválido ao tentar remover o usuário: {Id}", id);
                     throw new ArgumentException("Id inválido.");
                 }
 
@@ -180,14 +185,22 @@ namespace MasterIdiomas.Controllers
                 // Remove a sessão do usuário
                 _sessao.RemoverSessaoUsuario();
                 TempData["MensagemSucesso"] = "Conta encerrada com sucesso!";
-                return RedirectToAction("Index", "Login");
+                return RedirectToAction("Login", "Login");
             }
             catch (Exception ex)
             {
-                // Loga erro e exibe mensagem de erro
-                _logger.LogError(ex, "Erro ao tentar remover o usuário com ID {Id}", id);
-                TempData["MensagemErro"] = "Ocorreu um erro inesperado.";
-                return Redirect(Request.Headers["Referer"].ToString()); // Retorna para a página anterior
+                _logger.LogError(ex, "Erro ao tentar remover usuário.");
+
+                if (ex.InnerException is InvalidOperationException || ex is InvalidOperationException)
+                {
+                    TempData["MensagemErro"] = ex.Message;  // Exibe a mensagem amigável
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Erro ao tentar remover usuário, tente novamente.";
+                }
+
+                return RedirectToAction("AtualizarUsuario", new { id = id });
             }
         }
     }

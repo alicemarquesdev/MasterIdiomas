@@ -96,6 +96,7 @@ namespace MasterIdiomas.Controllers
 
         // Método para adicionar um novo aluno
         [HttpPost]
+        [ValidateAntiForgeryToken]  // Valida o Token Anti-Forgery
         public async Task<ActionResult> AddAluno(AlunoModel aluno)
         {
             try
@@ -110,18 +111,28 @@ namespace MasterIdiomas.Controllers
                     await _alunoRepositorio.AddAlunoAsync(aluno);
                     TempData["MensagemSucesso"] = "O Aluno foi criado com sucesso!";
                 }
-                return Redirect(Request.Headers["Referer"].ToString());
+                return RedirectToAction("Alunos");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao adicionar aluno.");
-                TempData["MensagemErro"] = "Erro no cadastro do aluno, tente novamente.";
-                return Redirect(Request.Headers["Referer"].ToString());
+
+                if (ex.InnerException is InvalidOperationException || ex is InvalidOperationException)
+                {
+                    TempData["MensagemErro"] = ex.Message;  // Exibe a mensagem amigável
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Erro ao adicionar aluno, tente novamente.";
+                }
+
+                return RedirectToAction("Alunos");
             }
         }
 
         // Método para atualizar os dados de um aluno
         [HttpPost]
+        [ValidateAntiForgeryToken]  // Valida o Token Anti-Forgery
         public async Task<ActionResult> AtualizarAluno(AlunoModel aluno)
         {
             try
@@ -141,13 +152,24 @@ namespace MasterIdiomas.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao atualizar aluno.");
-                TempData["MensagemErro"] = "Erro ao atualizar os dados do aluno, tente novamente.";
+
+                if (ex.InnerException is InvalidOperationException || ex is InvalidOperationException)
+                {
+                    TempData["MensagemErro"] = ex.Message;  // Exibe a mensagem amigável
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Erro ao atualizar os dados do aluno, tente novamente.";
+                }
+
                 return Redirect(Request.Headers["Referer"].ToString());
             }
+
         }
 
         // Método para remover um aluno
         [HttpPost]
+        [ValidateAntiForgeryToken]  // Valida o Token Anti-Forgery
         public async Task<ActionResult> RemoverAluno(int id)
         {
             try

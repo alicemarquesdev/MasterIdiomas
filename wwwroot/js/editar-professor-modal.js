@@ -16,7 +16,7 @@ atualizarProfessorModal.addEventListener('show.bs.modal', function (event) {
     var nome = button.getAttribute('data-nome');
     var email = button.getAttribute('data-email');
     var genero = button.getAttribute('data-genero');
-    var dataNascimento = button.getAttribute('data-nascimento');
+    var dataNascimento = button.getAttribute('data-data-nascimento');
     var status = button.getAttribute('data-status');
 
     // Preenche os campos do modal com os valores recuperados dos atributos do botão.

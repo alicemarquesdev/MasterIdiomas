@@ -6,7 +6,7 @@ namespace MasterIdiomas.Models
     public class RedefinirSenhaModel
     {
         [Required(ErrorMessage = "Por favor, insira o e-mail.")]
-        [EmailAddress(ErrorMessage = "O e-mail informado não é válido.")]
+        [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "O email informado não é válido.")]
         public required string Email { get; set; }
     }
 }

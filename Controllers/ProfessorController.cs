@@ -62,7 +62,7 @@ namespace MasterIdiomas.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao carregar a lista de professores.");
-                TempData["MensagemErro"] = $"Erro ao carregar a página de Professores, tente novamente.";
+                TempData["MensagemErro"] = "Erro ao carregar a página de Professores, tente novamente.";
                 return RedirectToAction("Index", "Home");
             }
         }
@@ -97,12 +97,13 @@ namespace MasterIdiomas.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao carregar cursos do professor.");
-                TempData["MensagemErro"] = $"Erro ao carregar página com dados do Professor";
+                TempData["MensagemErro"] = "Erro ao carregar página com dados do Professor";
                 return RedirectToAction("Index", "Home");
             }
         }
         // Método POST para adicionar um novo professor
         [HttpPost]
+        [ValidateAntiForgeryToken]  // Valida o Token Anti-Forgery
         public async Task<IActionResult> AddProfessor(ProfessorModel professor)
         {
             try
@@ -116,22 +117,32 @@ namespace MasterIdiomas.Controllers
                 {
                     await _professorRepositorio.AddProfessorAsync(professor);
                     TempData["MensagemSucesso"] = "Professor criado com sucesso!";
-                    return Redirect(Request.Headers["Referer"].ToString());
+                    return RedirectToAction("Professores");
                 }
 
                 TempData["MensagemErro"] = "Dados inválidos, por favor verifique e tente novamente.";
-                return Redirect(Request.Headers["Referer"].ToString());
+                return RedirectToAction("Professores");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao criar professor.");
-                TempData["MensagemErro"] = $"Erro ao adicionar professor.";
-                return Redirect(Request.Headers["Referer"].ToString());
+                _logger.LogError(ex, "Erro ao adicionar professor.");
+
+                if (ex.InnerException is InvalidOperationException || ex is InvalidOperationException)
+                {
+                    TempData["MensagemErro"] = ex.Message;  // Exibe a mensagem amigável
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Erro ao adicionar professor, tente novamente.";
+                }
+
+                return RedirectToAction("Professores");
             }
         }
 
         // Método POST para atualizar os dados do professor
         [HttpPost]
+        [ValidateAntiForgeryToken]  // Valida o Token Anti-Forgery
         public async Task<IActionResult> AtualizarProfessor(ProfessorModel professor)
         {
             try
@@ -150,7 +161,7 @@ namespace MasterIdiomas.Controllers
 
                         foreach (var curso in cursosDoProfessor)
                         {
-                            await _professorCursoRepositorio.RemoverProfessorDoCursoAsync(curso, professor.ProfessorId);
+                            await _professorCursoRepositorio.RemoverProfessorDoCursoAsync(curso);
                         }
                         TempData["MensagemSucesso"] = "Professor atualizado com sucesso! O status foi alterado para Inativo.";
                     }
@@ -160,19 +171,29 @@ namespace MasterIdiomas.Controllers
                     }
                     return Redirect(Request.Headers["Referer"].ToString());
                 }
-
-                return View(professor);
+                TempData["MensagemErro"] = $"Verifique os dados inseridos, erro ao tentar atualizar dados.";
+                return Redirect(Request.Headers["Referer"].ToString());
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao atualizar professor.");
-                TempData["MensagemErro"] = $"Erro ao atualizar professor";
+
+                if (ex.InnerException is InvalidOperationException || ex is InvalidOperationException)
+                {
+                    TempData["MensagemErro"] = ex.Message;  // Exibe a mensagem amigável
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Erro ao atualizar professor, tente novamente.";
+                }
+
                 return Redirect(Request.Headers["Referer"].ToString());
             }
         }
 
         // Método POST para remover um professor
         [HttpPost]
+        [ValidateAntiForgeryToken]  // Valida o Token Anti-Forgery
         public async Task<IActionResult> RemoverProfessor(int id)
         {
             try
@@ -191,12 +212,21 @@ namespace MasterIdiomas.Controllers
 
                 await _professorRepositorio.RemoverProfessorAsync(id);
                 TempData["MensagemSucesso"] = "Professor removido com sucesso!";
-                return Redirect(Request.Headers["Referer"].ToString());
+                return RedirectToAction("Professores");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao remover professor.");
-                TempData["MensagemErro"] = $"Erro ao remover professor.";
+
+                if (ex.InnerException is InvalidOperationException || ex is InvalidOperationException)
+                {
+                    TempData["MensagemErro"] = ex.Message;  // Exibe a mensagem amigável
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Erro ao remover professor, tente novamente.";
+                }
+
                 return Redirect(Request.Headers["Referer"].ToString());
             }
         }

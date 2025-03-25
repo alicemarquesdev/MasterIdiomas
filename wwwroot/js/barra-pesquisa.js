@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Verifica se o termo de pesquisa tem pelo menos 1 caractere (ajustado para 3 no comentário original)
         if (searchTerm.length > 0) {
             // Faz uma requisição ao servidor para buscar sugestões com base no termo digitado
-            fetch(`/Curso/BarraDePesquisa?termo=${searchTerm}`)
+            fetch(`/Home/BarraDePesquisa?termo=${searchTerm}`)
                 .then(response => response.json()) // Converte a resposta para JSON
                 .then(data => {
                     // Limpa qualquer conteúdo existente no dropdown
@@ -33,13 +33,16 @@ document.addEventListener("DOMContentLoaded", function () {
                             option.textContent = item.nome; // Define o texto da sugestão com o nome do curso
                             searchDropdown.appendChild(option); // Adiciona o novo item no dropdown
                         });
-
-                        // Exibe o dropdown se houverem resultados
-                        searchDropdown.style.display = "block";
                     } else {
-                        // Se não houver resultados, oculta o dropdown
-                        searchDropdown.style.display = "none";
+                        // Se não houver resultados, exibe a mensagem de "Nenhum resultado encontrado"
+                        let noResultsOption = document.createElement("a");
+                        noResultsOption.classList.add("dropdown-item", "text-muted");
+                        noResultsOption.textContent = "Nenhum resultado encontrado";
+                        searchDropdown.appendChild(noResultsOption);
                     }
+
+                    // Exibe o dropdown
+                    searchDropdown.style.display = "block";
                 })
                 .catch(error => console.error("Erro ao buscar sugestões:", error)); // Caso ocorra um erro na requisição, exibe no console
         } else {

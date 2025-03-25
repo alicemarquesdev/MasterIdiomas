@@ -11,6 +11,8 @@ namespace MasterIdiomas.Models
 
         [Required(ErrorMessage = "Por favor, informe o nome do professor.")]
         [StringLength(30, ErrorMessage = "O nome do professor não pode exceder 30 caracteres.")]
+        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "O nome deve conter apenas letras e espaços.")]
+
         public required string Nome { get; set; }
 
         [Required(ErrorMessage = "Por favor, selecione o gênero.")]
@@ -21,7 +23,7 @@ namespace MasterIdiomas.Models
         public required DateTime DataNascimento { get; set; }
 
         [Required(ErrorMessage = "O e-mail é obrigatório.")]
-        [EmailAddress(ErrorMessage = "Por favor, insira um e-mail válido.")]
+        [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "O email informado não é válido.")]
         public required string Email { get; set; }
 
         public DateTime DataCadastro { get; set; } = DateTime.Now;

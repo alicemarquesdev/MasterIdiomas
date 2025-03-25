@@ -9,6 +9,7 @@ namespace MasterIdiomas.Filters
     // Para permitir acesso a views
     public class UsuarioLogado : ActionFilterAttribute
     {
+       
         // Método que é executado antes da ação ser chamada
         public override void OnActionExecuting(ActionExecutingContext context)
         {
@@ -55,7 +56,8 @@ namespace MasterIdiomas.Filters
                     { "controller", "Login" },
                     { "action", "Login" }
                 });
-                throw new InvalidOperationException("Erro ao verificar a sessão do usuário. Detalhes: " + ex.Message);
+
+                throw new Exception("Erro ao verificar a sessão do usuário.", ex);
             }
         }
     }

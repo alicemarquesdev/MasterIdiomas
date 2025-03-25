@@ -39,6 +39,8 @@ namespace MasterIdiomas
             // Configuração de Controllers e Views
             builder.Services.AddControllersWithViews();
 
+            builder.Services.AddAntiforgery(options => options.HeaderName = "RequestVerificationToken");
+
             // Configurar o contexto de banco de dados
             builder.Services.AddDbContext<BancoContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
@@ -83,9 +85,21 @@ namespace MasterIdiomas
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            // Adicionar CSP (Content Security Policy)
+            // Evitar ataques de XSS e injeção de scripts bloqueando fontes de conteúdo não autorizadas.
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers.TryAdd("Content-Security-Policy",
+                "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-src 'none';");
+                await next();
+            });
+
+            // Captura o erro 400 (Bad Request) devido à falha no token
+            app.UseStatusCodePagesWithRedirects("/Home/Error");
             app.UseRouting();
-            app.UseAuthorization();
             app.UseSession();
+            app.UseAuthorization();
 
             // Adicionar compressão de resposta
             app.UseResponseCompression();

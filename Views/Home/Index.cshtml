@@ -16,67 +16,67 @@
     <div class="row">
         <!-- Cards -->
         <div class="col-xl-3 col-md-6 mb-5">
-            <div class="card border-left-primary shadow h-100 py-2">
+            <a class="card border-left-primary text-decoration-none text-dark shadow h-100 py-2" asp-controller="Aluno" asp-action="Alunos">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                 TOTAL DE ALUNOS
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalAlunos</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model?.TotalAlunos</div>
                         </div>
                         <div class="col-auto"><i class="fas fa-user-graduate fa-2x text-gray-300"></i></div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-xl-3 col-md-6 mb-5">
-            <div class="card border-left-success shadow h-100 py-2">
+            <a class="card border-left-success text-decoration-none text-dark shadow h-100 py-2" asp-controller="Curso" asp-action="Cursos">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                 TOTAL DE CURSOS
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalCursos</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model?.TotalCursos</div>
                         </div>
                         <div class="col-auto"><i class="fas fa-book-open fa-2x text-gray-300"></i></div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-xl-3 col-md-6 mb-5">
-            <div class="card border-left-info shadow h-100 py-2">
+            <a class="card border-left-info text-decoration-none text-dark shadow h-100 py-2" asp-controller="Professor" asp-action="Professores">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                                 TOTAL DE PROFESSORES
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalProfessores</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model?.TotalProfessores</div>
                         </div>
                         <div class="col-auto"><i class="fas fa-chalkboard-teacher fa-2x text-gray-300"></i></div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-xl-3 col-md-6 mb-5">
-            <div class="card border-left-warning shadow h-100 py-2">
+            <a class="card border-left-warning text-decoration-none text-dark shadow h-100 py-2" asp-controller="Curso" asp-action="Cursos">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                                 TOTAL DE IDIOMAS
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalIdiomas</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model?.TotalIdiomas</div>
                         </div>
                         <div class="col-auto"><i class="fas fa-globe fa-2x text-gray-300"></i></div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 
@@ -94,15 +94,15 @@
                                 <th>Curso</th>
                                 <th>Turno</th>
                                 <th>Nível</th>
-                                <th>Data de Início</th>
+                                <th>Início</th>
                                 <th>Status</th>
                                 <th>Alunos</th>
-                                <th>Máx. Alunos</th>
+                                <th>Máx.Alunos</th>
                                 <th>Professor</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @if (Model.Cursos != null && Model.Cursos.Any())
+                            @if (Model?.Cursos != null && Model.Cursos.Any())
                             {
                                 foreach (var curso in Model.Cursos)
                                 {

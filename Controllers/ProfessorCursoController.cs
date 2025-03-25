@@ -1,5 +1,4 @@
 ﻿using MasterIdiomas.Filters;
-using MasterIdiomas.Repositorio;
 using MasterIdiomas.Repositorio.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,8 +18,8 @@ namespace MasterIdiomas.Controllers
         private readonly ILogger<ProfessorCursoController> _logger; // Logger para registrar as ações e erros
 
         // Construtor do Controller, com injeção de dependência dos repositórios e do logger.
-        public ProfessorCursoController(IProfessorCursoRepositorio professorCursoRepositorio, 
-            ICursoRepositorio cursoRepositorio, 
+        public ProfessorCursoController(IProfessorCursoRepositorio professorCursoRepositorio,
+            ICursoRepositorio cursoRepositorio,
             IProfessorRepositorio professorRepositorio,
             ILogger<ProfessorCursoController> logger)
         {
@@ -40,7 +39,7 @@ namespace MasterIdiomas.Controllers
                 // Validação para garantir que os IDs não sejam nulos ou vazios
                 if (professorId <= 0 || cursoId <= 0)
                 {
-                    throw new ArgumentException("Os IDs do professor e do curso devem ser maiores que zero.");
+                    return BadRequest(new { mensagem = "Id de professor/curso inválido." });
                 }
 
                 // Buscar professor e curso no banco de dados
@@ -50,27 +49,35 @@ namespace MasterIdiomas.Controllers
                 // Verificar se o curso e o professor existem
                 if (curso == null || professor == null)
                 {
-                    throw new Exception("Professor/Curso não encontrados no banco de dados");
+                    return NotFound(new { mensagem = "Professor/Curso não encontrado." });
                 }
 
                 // Verificar se o curso já está associado a outro professor
                 if (curso.ProfessorId != null)
                 {
-                    throw new Exception($"O curso '{curso.Idioma}' já está associado ao professor '{curso.Professor?.Nome ?? "desconhecido"}'.");
+                    TempData["MensagemErro"] = $"O curso '{curso.Idioma}' já está associado ao professor '{curso.Professor?.Nome}'.";
+                    return BadRequest(new { mensagem = $"O curso '{curso.Idioma}' já está associado ao professor '{curso.Professor?.Nome}'." });
                 }
 
                 // Adicionar professor ao curso
                 await _professorCursoRepositorio.AddProfessorAoCursoAsync(curso, professor);
-                TempData["MensagemSucesso"] = $"O professor foi adicionado ao curso com sucesso.";
 
-                return Redirect(Request.Headers["Referer"].ToString());
+                return Ok(new { mensagem = "Professor adicionado ao curso com sucesso!" });
             }
             catch (Exception ex)
             {
-                // Log de erro e mensagem de erro na tela
                 _logger.LogError(ex, "Erro ao tentar adicionar professor ao curso.");
-                TempData["MensagemErro"] = "Erro ao tentar adicionar professor ao curso.";
-                return Redirect(Request.Headers["Referer"].ToString());
+
+                if (ex.InnerException is InvalidOperationException || ex is InvalidOperationException)
+                {
+                    TempData["MensagemErro"] = ex.Message;  // Exibe a mensagem amigável
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Erro ao tentar adicionar professor ao curso, tente novamente.";
+                }
+
+                return StatusCode(500, new { mensagem = "Erro interno no servidor." });
             }
         }
 
@@ -83,7 +90,7 @@ namespace MasterIdiomas.Controllers
                 // Validação para garantir que os IDs não sejam nulos ou vazios
                 if (professorId <= 0 || cursoId <= 0)
                 {
-                    throw new ArgumentException("Os IDs do professor e do curso devem ser maiores que zero.");
+                    return BadRequest(new { mensagem = "Id de professor/curso inválido." });
                 }
 
                 // Verificar se o professor e o curso existem
@@ -92,21 +99,28 @@ namespace MasterIdiomas.Controllers
 
                 if (professor == null || curso == null)
                 {
-                    throw new Exception("Professor/Curso não encontrados no banco de dados.");
+                    return NotFound(new { mensagem = $"Professor/Curso não encontrado." });
                 }
 
                 // Remover professor do curso
-                await _professorCursoRepositorio.RemoverProfessorDoCursoAsync(curso, professorId);
-                TempData["MensagemSucesso"] = "Professor removido do curso com sucesso!";
+                await _professorCursoRepositorio.RemoverProfessorDoCursoAsync(curso);
 
-                return Redirect(Request.Headers["Referer"].ToString());
+                return Ok(new { mensagem = "Professor removido do curso com sucesso!" });
             }
             catch (Exception ex)
             {
-                // Log de erro e mensagem de erro na tela
-                TempData["MensagemErro"] = $"Erro ao remover professor do curso.";
-                _logger.LogError(ex, "Erro ao tentar remover professor do curso.");
-                return Redirect(Request.Headers["Referer"].ToString());
+                _logger.LogError(ex, "Erro ao tentar remover professor ao curso.");
+
+                if (ex.InnerException is InvalidOperationException || ex is InvalidOperationException)
+                {
+                    TempData["MensagemErro"] = ex.Message;  // Exibe a mensagem amigável
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Erro ao tentar remover professor ao curso, tente novamente.";
+                }
+
+                return StatusCode(500, new { mensagem = "Erro interno no servidor." });
             }
         }
     }

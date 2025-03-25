@@ -75,7 +75,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form asp-controller="Curso" asp-action="AtualizarCurso" method="post">
+                    <form asp-controller="Curso" asp-action="AtualizarCurso" id="formEditarCurso" asp-antiforgery="true" method="post">
                         <input type="hidden" asp-for="@Model.Curso.CursoId" />
 
                         <!-- Linha de Inputs -->
@@ -119,7 +119,7 @@
 
                             <div class="col-md-6 mb-3">
                                 <label for="DataInicio" class="form-label">Data de Início</label>
-                                <input type="date" class="form-control" asp-for="@Model.Curso.DataInicio" required />
+                                <input type="date" class="form-control" asp-for="@Model.Curso.DataInicio" min="2025-01-01" title="Data de inicio mínima 01/01/2025." required />
                                 <span class="text-danger">@Html.ValidationMessageFor(x => x.Curso.DataInicio)</span>
                             </div>
                         </div>
@@ -151,7 +151,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100 mb-1">Salvar Alterações</button>
+                        <button type="submit" class="btn btn-primary w-100 mb-1" id="btnSalvarCurso">Salvar Alterações</button>
                     </form>
                 </div>
             </div>
@@ -170,10 +170,10 @@
                     <thead>
                         <tr>
                             <th>Nome</th>
-                            <th>Data-Nasc.</th>
+                            <th>Nascimento</th>
                             <th>Gênero</th>
                             <th>Status</th>
-                            <th>Data de Cadastro</th>
+                            <th>Cadastro</th>
                             <th>Cursos</th>
                             <th>Ações</th>
                         </tr>
@@ -191,14 +191,11 @@
                                     <td>@aluno.DataCadastro.ToString("dd/MM/yyyy")</td>
                                     <td>@aluno.QuantidadeCursos</td>
                                     <td>
-                                        <!-- Botão para abrir o modal -->
-                                        <button type="button" class="btn-sm btn-danger"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#modalRemocao"
-                                                data-id="@aluno.AlunoId"
-                                                data-nome="@aluno.Nome"
-                                                data-tipo="removerAlunoDoCurso"
-                                                data-curso-id="@Model.Curso.CursoId">
+                                        <!-- Botão para remover aluno do curso -->
+                                        <button class="btn-sm btn-danger btn-aluno-acao"
+                                                data-aluno-id="@aluno.AlunoId"
+                                                data-curso-id="@Model.Curso.CursoId"
+                                                data-tipo="remover">
                                             Remover Aluno do Curso
                                         </button>
                                     </td>
@@ -229,10 +226,10 @@
                     <thead>
                         <tr>
                             <th>Nome</th>
-                            <th>Data de Nascimento</th>
+                            <th>Nascimento</th>
                             <th>Gênero</th>
                             <th>Status</th>
-                            <th>Data de Cadastro</th>
+                            <th>Cadastro</th>
                             <th>Cursos</th>
                             <th>Ações</th>
                         </tr>
@@ -250,12 +247,13 @@
                                     <td>@aluno.DataCadastro.ToString("dd/MM/yyyy")</td>
                                     <td>@aluno.QuantidadeCursos</td>
                                     <td class="text-center">
-                                        <!-- Botão para acionar o modal de remoção -->
-                                        <form asp-controller="AlunoCurso" asp-action="AddAlunoAoCurso" method="post">
-                                            <input type="hidden" name="cursoId" value="@Model.Curso.CursoId" />
-                                            <input type="hidden" name="alunoId" value="@aluno.AlunoId" />
-                                            <button type="submit" class=" btn-primary">Adicionar Aluno ao Curso</button>
-                                        </form>
+                                        <!-- Adicionar o aluno ao curso -->
+                                        <button class="btn-sm btn-primary btn-aluno-acao"
+                                                data-aluno-id="@aluno.AlunoId"
+                                                data-curso-id="@Model.Curso.CursoId"
+                                                data-tipo="adicionar">
+                                            Adicionar Aluno
+                                        </button>
                                     </td>
                                 </tr>
                             }
@@ -282,12 +280,12 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form asp-controller="ProfessorCurso" asp-action="AddProfessorAoCurso" method="post">
-                    <input type="hidden" id="cursoIdInput" name="cursoId" />
+                <form id="formAdicionarProfessor" asp-controller="ProfessorCurso" asp-action="AddProfessorAoCurso" method="post">
+                    <input type="hidden" id="cursoIdInput" name="CursoId" />
 
                     <div class="mb-4">
                         <label for="ProfessorId" class="form-label">Selecione um professor:</label>
-                        <select class="form-control" name="professorId" required>
+                        <select class="form-control" name="ProfessorId" id="ProfessorId" required>
                             <option value="" selected>Selecione</option>
                             @if (Model.Professores != null && Model.Professores.Any())
                             {
@@ -305,11 +303,11 @@
 
                     <button type="submit" class="btn btn-primary w-100 mb-1">Adicionar Professor</button>
                 </form>
-            </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script src="~/js/add-professor-curso-modal.js"></script>
+    <script src="~/js/aluno-curso.js"></script>
 }

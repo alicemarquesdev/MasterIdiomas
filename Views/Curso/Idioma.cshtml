@@ -29,10 +29,10 @@
                             <th>Curso</th>
                             <th>Turno</th>
                             <th>Nível</th>
-                            <th>Data de Início</th>
+                            <th>Início</th>
                             <th>Carga Horária</th>
                             <th>Alunos</th>
-                            <th>Max. Alunos</th>
+                            <th>Max.Alunos</th>
                             <th>Status</th>
                             <th>Professor</th>
                             <th>Ações</th>
@@ -120,12 +120,12 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form asp-controller="ProfessorCurso" asp-action="AddProfessorAoCurso" method="post">
+                <form id="formAdicionarProfessor" asp-controller="ProfessorCurso" asp-action="AddProfessorAoCurso" method="post">
                     <input type="hidden" id="cursoIdInput" name="CursoId" />
 
                     <div class="mb-4">
                         <label for="ProfessorId" class="form-label">Selecione um professor:</label>
-                        <select class="form-control" name="ProfessorId" required>
+                        <select class="form-control" name="ProfessorId" id="ProfessorId" required>
                             <option value="" selected>Selecione</option>
                             @if (Model.Professores != null && Model.Professores.Any())
                             {
@@ -157,7 +157,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form asp-controller="Curso" asp-action="AtualizarCurso" method="post">
+                <form asp-controller="Curso" asp-action="AtualizarCurso" asp-antiforgery="true" id="formEditarCurso" method="post">
                     <input type="hidden" id="CursoId" name="CursoId" />
 
                     <!-- Inputs lado a lado -->
@@ -209,20 +209,21 @@
 
                     <div class="mb-3">
                         <label for="DataInicio" class="form-label">Data de Início</label>
-                        <input type="date" class="form-control" id="DataInicio" name="DataInicio" required />
+                        <input type="date" class="form-control" id="DataInicio" name="DataInicio" min="2025-01-01" title="Data de inicio mínima 01/01/2025." required />
+
                     </div>
 
                     <div class="mb-3">
                         <label for="CargaHoraria" class="form-label">Carga Horária</label>
-                        <input type="number" class="form-control" id="CargaHoraria" name="CargaHoraria" required />
+                        <input type="number" class="form-control" id="CargaHoraria" name="CargaHoraria" min="10" max="50" title="A carga horária deve estar entre 10 e 50 horas." required />
                     </div>
 
                     <div class="mb-3">
                         <label for="MaxAlunos" class="form-label">Quantidade Máxima de Alunos</label>
-                        <input type="number" class="form-control" id="MaxAlunos" name="MaxAlunos" required />
+                        <input type="number" class="form-control" id="MaxAlunos" name="MaxAlunos" min="10" max="30" title="O número máximo de alunos deve estar entre 10 e 30." required />
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 mb-1">Salvar Alterações</button>
+                    <button type="submit" class="btn btn-primary w-100 mb-1" id="btnSalvarCurso">Salvar Alterações</button>
                 </form>
             </div>
         </div>

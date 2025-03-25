@@ -14,12 +14,14 @@ namespace MasterIdiomas.Repositorio
     public class ProfessorCursoRepositorio : IProfessorCursoRepositorio
     {
         private readonly BancoContext _context;
+        private readonly ILogger<ProfessorCursoRepositorio> _logger;
 
         // Construtor que recebe o contexto do banco
-        public ProfessorCursoRepositorio(BancoContext context)
+        public ProfessorCursoRepositorio(BancoContext context, ILogger<ProfessorCursoRepositorio> logger)
         {
             _context = context;
-                   }
+            _logger = logger;
+        }
 
         // Busca todos os cursos em que um professor está inscrito
         public async Task<List<CursoModel>> BuscarCursosDoProfessorAsync(int professorId)
@@ -35,23 +37,24 @@ namespace MasterIdiomas.Repositorio
             catch (Exception ex)
             {
                 // Lança uma exceção personalizada para evitar exposição de erros internos
-                throw new Exception("Ocorreu um erro ao buscar os cursos do professor. Tente novamente mais tarde.", ex);
+                _logger.LogError(ex, "Erro ao buscar os cursos do professor.");
+                throw new Exception("Erro ao buscar os cursos do professor.", ex);
             }
         }
 
-        // Busca cursos onde o professor ainda não está inscrito
+        // Busca cursos onde não tem professores
         public async Task<List<CursoModel>> BuscarCursosProfessorNaoInscritoAsync(int professorId)
         {
             try
             {
                 return await _context.Cursos
-                    .Where(c => c.ProfessorId == null || c.ProfessorId != professorId) // Filtra cursos sem professor ou que tenham outro professor
+                    .Where(c => c.ProfessorId == null) // Filtra cursos sem professor
                     .ToListAsync();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erro ao buscar cursos: {ex.Message}");
-                return new List<CursoModel>(); // Retorna lista vazia para evitar falha na aplicação
+                _logger.LogError(ex, "Erro ao buscar cursos sem professor.");
+                throw new Exception("Erro ao buscar cursos sem professor.", ex);
             }
         }
 
@@ -61,15 +64,16 @@ namespace MasterIdiomas.Repositorio
             try
             {
                 const int MAX_CURSOS_POR_PROFESSOR = 3;
-              
+
                 // Verificar se o professor atingiu o limite de cursos
                 var cursosDoProfessor = await BuscarCursosDoProfessorAsync(professor.ProfessorId);
                 if (cursosDoProfessor.Count() >= MAX_CURSOS_POR_PROFESSOR)
                 {
-                    throw new Exception($"O professor '{professor.Nome}' já está associado ao número máximo de cursos permitidos ({MAX_CURSOS_POR_PROFESSOR}).");
+                    throw new InvalidOperationException($"O professor '{professor.Nome}' já está associado ao número máximo de cursos permitidos ({MAX_CURSOS_POR_PROFESSOR}).");
                 }
 
                 curso.ProfessorId = professor.ProfessorId; // Define o professor do curso
+                professor.QuantidadeCursos++;
 
                 _context.Cursos.Update(curso); // Atualiza o curso no banco de dados
                 var result = await _context.SaveChangesAsync(); // Salva as alterações
@@ -79,18 +83,27 @@ namespace MasterIdiomas.Repositorio
                     throw new Exception("Nenhuma alteração no banco de dados."); // Garante que a operação foi bem-sucedida
                 }
             }
+            catch(InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Erro ao adicionar professor ao curso.");
+                throw new InvalidOperationException(ex.Message);
+            }
             catch (Exception ex)
             {
-                throw new Exception($"Erro ao adicionar o professor ao curso: {ex.Message}", ex);
+                _logger.LogError(ex, "Erro ao adicionar professor ao curso.");
+                throw new Exception("Erro ao adicionar professor ao curso", ex);
             }
         }
 
         // Remove um professor de um curso
-        public async Task RemoverProfessorDoCursoAsync(CursoModel curso, int professorId)
+        public async Task RemoverProfessorDoCursoAsync(CursoModel curso)
         {
             try
             {
                 curso.ProfessorId = null; // Remove a relação entre professor e curso
+                var professorDb = curso.Professor;
+
+                professorDb.QuantidadeCursos = professorDb.QuantidadeCursos > 0 ? professorDb.QuantidadeCursos - 1 : 0;
 
                 _context.Cursos.Update(curso); // Atualiza o curso no banco de dados
                 var result = await _context.SaveChangesAsync(); // Salva as alterações
@@ -102,7 +115,8 @@ namespace MasterIdiomas.Repositorio
             }
             catch (Exception ex)
             {
-                throw new Exception("Erro ao remover o professor do curso. Tente novamente.", ex);
+                _logger.LogError(ex, "Erro ao remover o professor do curso.");
+                throw new Exception("Erro ao remover o professor do curso.", ex);
             }
         }
     }

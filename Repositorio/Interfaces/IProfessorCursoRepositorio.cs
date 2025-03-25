@@ -15,6 +15,6 @@ namespace MasterIdiomas.Repositorio.Interfaces
         Task AddProfessorAoCursoAsync(CursoModel curso, ProfessorModel professor);
 
         // Remove a associação de um professor de um curso específico
-        Task RemoverProfessorDoCursoAsync(CursoModel curso, int professorId);
+        Task RemoverProfessorDoCursoAsync(CursoModel curso);
     }
 }

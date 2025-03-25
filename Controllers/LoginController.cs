@@ -54,7 +54,8 @@ namespace MasterIdiomas.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao tentar acessar a página de criar conta.");
-                return View("Error", new { Message = "Ocorreu um erro inesperado ao acessar a página de criar conta." });
+                TempData["MensagemErro"] = "Erro ao tentar acessar a página de criar conta, tente novamente.";
+                return RedirectToAction("Login");
             }
         }
 
@@ -75,7 +76,8 @@ namespace MasterIdiomas.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao tentar acessar a página de login.");
-                return View("Error", new { Message = "Ocorreu um erro inesperado ao acessar a página de login." });
+                TempData["MensagemErro"] = "Erro ao tentar acessar a página de login, tente novamente.";
+                return RedirectToAction("Error");
             }
         }
 
@@ -95,7 +97,8 @@ namespace MasterIdiomas.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao tentar acessar a página de redefinir senha.");
-                return View("Error", new { Message = "Ocorreu um erro inesperado ao acessar a página de redefinir senha." });
+                TempData["MensagemErro"] = "Erro ao tentar acessar a página de redefinir senha, tente novamente.";
+                return RedirectToAction("Login");
             }
         }
 
@@ -110,17 +113,19 @@ namespace MasterIdiomas.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao tentar realizar logout.");
-                return RedirectToAction("Login", "Login");
+                TempData["MensagemErro"] = "Erro ao tentar realizar logout, tente novamente.";
+                return RedirectToAction("Index", "Home");
             }
         }
 
         // Método POST para criar uma nova conta de usuário.
         [HttpPost]
+        [ValidateAntiForgeryToken]  // Valida o Token Anti-Forgery
         public async Task<IActionResult> CriarConta(UsuarioModel usuario)
         {
             try
             {
-                if(usuario == null)
+                if (usuario == null)
                 {
                     throw new ArgumentNullException("Model usuário é null");
                 }
@@ -131,19 +136,29 @@ namespace MasterIdiomas.Controllers
                     TempData["MensagemSucesso"] = "A conta foi criada com sucesso! Agora você pode efetuar o login para acessar sua conta.";
                     return RedirectToAction("Login", "Login");
                 }
-                TempData["MensagemErro"] = "Por favor, verifique os dados inseridos."; // Exibe mensagem de erro caso os dados não sejam válidos.
+                TempData["MensagemErro"] = "Dados inválidos. Por favor, tente novamente."; // Exibe mensagem de erro caso os dados não sejam válidos.
                 return View(usuario);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao tentar criar uma conta.");
-                TempData["MensagemErro"] = $"Ocorreu um erro: {ex.Message}";
-                return View(usuario);
+                _logger.LogError(ex, "Erro ao criar conta.");
+
+                if (ex.InnerException is InvalidOperationException || ex is InvalidOperationException)
+                {
+                    TempData["MensagemErro"] = ex.Message;  // Exibe a mensagem amigável
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Erro ao criar conta, tente novamente.";
+                }
+
+                return RedirectToAction("CriarConta");
             }
         }
 
         // Método POST para realizar o login do usuário.
         [HttpPost]
+        [ValidateAntiForgeryToken]  // Valida o Token Anti-Forgery
         public async Task<IActionResult> Entrar(LoginModel loginModel)
         {
             try
@@ -170,25 +185,38 @@ namespace MasterIdiomas.Controllers
                     {
                         TempData["MensagemErro"] = "Email não existe.";
                     }
+
+                    return View("Login");
                 }
-                TempData["MensagemErro"] = "Verifique os dados inseridos"; // Exibe mensagem de erro caso as credenciais sejam inválidas.
+
+                TempData["MensagemErro"] = "Email/Senha inválido. Verifique os dados inseridos."; // Exibe mensagem de erro caso as credenciais sejam inválidas.
                 return View("Login");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao tentar realizar o login.");
-                TempData["MensagemErro"] = $"Ops, não conseguimos realizar seu login, tente novamente. Detalhe do erro: {ex.Message}";
-                return View("Login");
+                _logger.LogError(ex, "Erro ao tentar efetuar login.");
+
+                if (ex.InnerException is InvalidOperationException || ex is InvalidOperationException)
+                {
+                    TempData["MensagemErro"] = ex.Message;  // Exibe a mensagem amigável
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Erro ao tentar efetuar login, tente novamente.";
+                }
+
+                return RedirectToAction("Login");
             }
         }
 
         // Método POST para enviar o link para redefinir a senha para o usuário.
         [HttpPost]
+        [ValidateAntiForgeryToken]  // Valida o Token Anti-Forgery
         public async Task<IActionResult> EnviarLinkParaRedefinirSenha(string email)
         {
             try
             {
-                if(string.IsNullOrEmpty(email))
+                if (string.IsNullOrEmpty(email))
                 {
                     throw new ArgumentNullException("Email é nulo");
                 }
@@ -214,15 +242,24 @@ namespace MasterIdiomas.Controllers
                 }
                 else
                 {
-                    TempData["MensagemErro"] = "Os dados não são válidos, tente novamente.";
+                    TempData["MensagemErro"] = "Os email não é válido, tente novamente.";
                 }
                 return RedirectToAction("RedefinirSenha", "Login");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao tentar enviar o link para redefinir a senha.");
-                TempData["MensagemErro"] = "Ocorreu um erro ao tentar redefinir sua senha. Tente novamente.";
-                return RedirectToAction("RedefinirSenha", "Login");
+                _logger.LogError(ex, "Erro ao tentar redefinir senha");
+
+                if (ex.InnerException is InvalidOperationException || ex is InvalidOperationException)
+                {
+                    TempData["MensagemErro"] = ex.Message;  // Exibe a mensagem amigável
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Erro ao tentar redefinir senha, tente novamente.";
+                }
+
+                return RedirectToAction("RedefinirSenha");
             }
         }
     }

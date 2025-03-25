@@ -24,13 +24,16 @@ namespace MasterIdiomas.Repositorio
     {
         private readonly BancoContext _context;
         private readonly IAlunoCursoRepositorio _alunoCursoRepositorio;
+        private readonly ILogger<CursoRepositorio> _logger;
 
         // Construtor que recebe o contexto do banco e o repositório de alunos associados a cursos
         public CursoRepositorio(BancoContext context,
-                                IAlunoCursoRepositorio alunoCursoRepositorio)
+                                IAlunoCursoRepositorio alunoCursoRepositorio,
+                                ILogger<CursoRepositorio> logger)
         {
             _context = context;
             _alunoCursoRepositorio = alunoCursoRepositorio;
+            _logger = logger;
         }
 
         // Buscar todos os idiomas cadastrados no banco de dados
@@ -44,7 +47,8 @@ namespace MasterIdiomas.Repositorio
             catch (Exception ex)
             {
                 // Lança uma exceção caso ocorra erro
-                throw new Exception("Erro ao buscar os idiomas. Tente novamente.", ex);
+                _logger.LogError(ex, "Erro ao buscar os idiomas.");
+                throw new Exception("Erro ao buscar os idiomas.", ex);
             }
         }
 
@@ -53,25 +57,21 @@ namespace MasterIdiomas.Repositorio
         {
             try
             {
-                // Busca o curso pelo ID, incluindo informações do professor e alunos
+                // Busca o curso pelo ID, incluindo informações do professor
                 var curso = await _context.Cursos
                     .Include(c => c.Professor)
                     .FirstOrDefaultAsync(x => x.CursoId == id);
-
-                if (curso != null)
-                {
-                    // Contagem de alunos associados ao curso
-                    curso.QuantidadeAlunos = curso.AlunoCurso.Count();
-                }
 
                 return curso;
             }
             catch (Exception ex)
             {
-                // Lança uma exceção caso ocorra erro
-                throw new Exception("Erro ao buscar o curso. Tente novamente.", ex);
+                // Lança uma exceção detalhada
+                _logger.LogError(ex, "Erro ao buscar o curso.");
+                throw new Exception("Erro ao buscar o curso.", ex);
             }
         }
+
 
         // Buscar todos os cursos com informações de alunos e professores
         public async Task<List<CursoModel>> BuscarTodosCursosAsync()
@@ -96,27 +96,29 @@ namespace MasterIdiomas.Repositorio
             catch (Exception ex)
             {
                 // Lança uma exceção caso ocorra erro
-                throw new Exception("Erro ao buscar os cursos. Tente novamente.", ex);
+                _logger.LogError(ex, "Erro ao buscar os cursos.");
+                throw new Exception("Erro ao buscar os cursos.", ex);
             }
         }
 
         // Buscar cursos de um idioma específico
         public async Task<List<CursoModel>> BuscarCursosPorIdiomaAsync(string idioma)
         {
-            // Busca todos os cursos de um idioma específico
-            var cursosDoIdioma = await _context.Cursos
-                .Where(x => x.Idioma == idioma)
-                .Include(a => a.AlunoCurso).ThenInclude(a => a.Aluno)
-                .Include(c => c.Professor)
-                .ToListAsync();
-
-            // Calculando a quantidade de alunos para cada curso
-            foreach (var curso in cursosDoIdioma)
+            try
             {
-                curso.QuantidadeAlunos = curso.AlunoCurso.Count();
-            }
+                // Busca todos os cursos de um idioma específico
+                return await _context.Cursos
+                    .Where(x => x.Idioma == idioma)
+                    .Include(a => a.AlunoCurso).ThenInclude(a => a.Aluno)
+                    .Include(c => c.Professor)
+                    .ToListAsync();
 
-            return cursosDoIdioma;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao buscar os cursos.");
+                throw new Exception("Erro ao buscar os cursos.", ex);
+            }
         }
 
         // Buscar cursos usando a barra de pesquisa
@@ -132,18 +134,19 @@ namespace MasterIdiomas.Repositorio
             catch (Exception ex)
             {
                 // Lança uma exceção caso ocorra erro
-                throw new Exception("Erro ao buscar os cursos. Tente novamente.", ex);
+                _logger.LogError(ex, "Erro ao buscar os cursos.");
+                throw new Exception("Erro ao buscar os cursos.", ex);
             }
         }
 
         // Verificar se existe um curso com as mesmas características
-        public async Task<bool> VerificarCursoExistenteAsync(string idioma, TurnoEnum turno, NivelEnum nivel)
+        public async Task<bool> VerificarCursoExistenteAsync(string idioma, TurnoEnum turno, NivelEnum nivel, int cursoId)
         {
             try
             {
                 // Verifica se já existe um curso com o mesmo idioma, turno e nível
                 var cursoExistente = await _context.Cursos
-                    .Where(x => x.Idioma == idioma && x.Turno == turno && x.Nivel == nivel)
+                    .Where(x => x.Idioma == idioma && x.Turno == turno && x.Nivel == nivel && x.CursoId != cursoId)
                     .FirstOrDefaultAsync();
 
                 return cursoExistente != null; // Retorna true se existir, caso contrário false
@@ -151,7 +154,8 @@ namespace MasterIdiomas.Repositorio
             catch (Exception ex)
             {
                 // Lança uma exceção caso ocorra erro
-                throw new Exception("Erro ao verificar a existência do curso. Tente novamente.", ex);
+                _logger.LogError(ex, "Erro ao verificar a existência do curso.");
+                throw new Exception("Erro ao verificar a existência do curso.", ex);
             }
         }
 
@@ -164,11 +168,11 @@ namespace MasterIdiomas.Repositorio
                 const int MAX_IDIOMAS_PARA_CURSOS = 12;
 
                 // Verifica se já existe um curso com o mesmo idioma, turno e nível
-                var cursoExistente = await VerificarCursoExistenteAsync(curso.Idioma, curso.Turno, curso.Nivel);
+                var cursoExistente = await VerificarCursoExistenteAsync(curso.Idioma, curso.Turno, curso.Nivel, curso.CursoId);
                 if (cursoExistente)
                 {
                     // Se um curso já existir, lança uma exceção
-                    throw new Exception("Já existe um curso registrado com o mesmo idioma, turno e nível.");
+                    throw new InvalidOperationException("Já existe um curso registrado com o mesmo idioma, turno e nível.");
                 }
 
                 // Verifica se o número de idiomas já cadastrados é maior ou igual ao limite
@@ -176,7 +180,7 @@ namespace MasterIdiomas.Repositorio
                 if (idiomasExistentes.Count >= MAX_IDIOMAS_PARA_CURSOS)
                 {
                     // Lança uma exceção se o limite de idiomas for atingido
-                    throw new Exception($"Não é possível criar mais de {MAX_IDIOMAS_PARA_CURSOS} cursos de idiomas diferentes.");
+                    throw new InvalidOperationException($"Não é possível criar mais de {MAX_IDIOMAS_PARA_CURSOS} cursos de idiomas diferentes.");
                 }
 
                 // Define o status do curso como "Em Andamento" antes de adicionar ao banco de dados
@@ -194,10 +198,16 @@ namespace MasterIdiomas.Repositorio
                     throw new Exception("Erro ao adicionar o curso. Tente novamente.");
                 }
             }
+            catch(InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Erro ao adicionar o curso.");
+                throw new InvalidOperationException(ex.Message);
+            }
             catch (Exception ex)
             {
                 // Lança uma exceção com a mensagem de erro, incluindo a exceção original
-                throw new Exception("Erro ao adicionar o curso. Tente novamente.", ex);
+                _logger.LogError(ex, "Erro ao adicionar o curso.");
+                throw new Exception("Erro ao adicionar o curso.", ex);
             }
         }
 
@@ -216,16 +226,16 @@ namespace MasterIdiomas.Repositorio
                     throw new Exception("Curso não encontrado. Verifique os dados e tente novamente.");
 
                 // Verifica se já existe um curso com o mesmo idioma, turno e nível
-                var cursoDuplicado = await VerificarCursoExistenteAsync(curso.Idioma, curso.Turno, curso.Nivel);
+                var cursoDuplicado = await VerificarCursoExistenteAsync(curso.Idioma, curso.Turno, curso.Nivel, curso.CursoId);
                 if (cursoDuplicado)
-                    throw new Exception("Já existe um curso registrado com o mesmo idioma, turno e nível.");
+                    throw new InvalidOperationException("Já existe um curso registrado com o mesmo idioma, turno e nível.");
 
                 // Verifica se o número de idiomas já cadastrados é maior ou igual ao limite
                 var idiomasExistentes = await BuscarIdiomasAsync();
                 if (idiomasExistentes.Count >= MAX_IDIOMAS_PARA_CURSOS)
                 {
                     // Lança uma exceção se o limite de idiomas for atingido
-                    throw new Exception($"Não é possível criar mais de {MAX_IDIOMAS_PARA_CURSOS} cursos de idiomas diferentes.");
+                    throw new InvalidOperationException($"Não é possível criar mais de {MAX_IDIOMAS_PARA_CURSOS} cursos de idiomas diferentes.");
                 }
 
                 // Atualiza os dados do curso no banco de dados
@@ -239,7 +249,7 @@ namespace MasterIdiomas.Repositorio
                 cursoDb.Status = curso.Status;
 
                 // Atualiza o curso no banco de dados
-                _context.Cursos.Update(curso);
+                _context.Cursos.Update(cursoDb);
                 var result = await _context.SaveChangesAsync();
 
                 // Verifica se a atualização foi bem-sucedida
@@ -249,10 +259,16 @@ namespace MasterIdiomas.Repositorio
                     throw new Exception("Nenhuma alteração no banco de dados");
                 }
             }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Erro ao atualizar o curso.");
+                throw new InvalidOperationException(ex.Message);
+            }
             catch (Exception ex)
             {
                 // Lança uma exceção com a mensagem de erro caso ocorra alguma falha durante a atualização
-                throw new Exception("Erro ao atualizar o curso. Tente novamente.", ex);
+                _logger.LogError(ex, "Erro ao atualizar o curso.");
+                throw new Exception("Erro ao atualizar o curso.", ex);
             }
         }
 
@@ -270,7 +286,7 @@ namespace MasterIdiomas.Repositorio
                 var cursosEmAndamento = CursosEmAndamento();
                 if (cursoDb.Status == StatusCursoEnum.EmAndamento && cursosEmAndamento == 1)
                 {
-                    throw new Exception("Limites do sistema foram atingidos. Não é possível excluir o curso.");
+                    throw new InvalidOperationException("Limites do sistema foram atingidos. Não é possível excluir o curso.");
                 }
 
                 // Remove o curso do banco de dados
@@ -285,10 +301,16 @@ namespace MasterIdiomas.Repositorio
 
                 return true;
             }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Erro ao remover o curso.");
+                throw new InvalidOperationException(ex.Message);
+            }
             catch (Exception ex)
             {
                 // Lança uma exceção caso ocorra erro
-                throw new Exception("Erro ao remover o curso. Tente novamente.", ex);
+                _logger.LogError(ex, "Erro ao remover o curso.");
+                throw new Exception("Erro ao remover o curso.", ex);
             }
         }
 
@@ -307,7 +329,8 @@ namespace MasterIdiomas.Repositorio
             catch (Exception ex)
             {
                 // Lança uma exceção caso ocorra erro
-                throw new Exception("Erro ao contar os cursos em andamento. Tente novamente.", ex);
+                _logger.LogError(ex, "Erro ao contar os cursos em andamento.");
+                throw new Exception("Erro ao contar os cursos em andamento.", ex);
             }
         }
 
@@ -322,7 +345,8 @@ namespace MasterIdiomas.Repositorio
             catch (Exception ex)
             {
                 // Lança uma exceção caso ocorra erro
-                throw new Exception("Erro ao contar o total de cursos. Tente novamente.", ex);
+                _logger.LogError(ex, "Erro ao contar o total de cursos.");
+                throw new Exception("Erro ao contar o total de cursos.", ex);
             }
         }
 
@@ -337,7 +361,8 @@ namespace MasterIdiomas.Repositorio
             catch (Exception ex)
             {
                 // Lança uma exceção caso ocorra erro
-                throw new Exception("Erro ao contar os idiomas. Tente novamente.", ex);
+                _logger.LogError(ex, "Erro ao contar os idiomas.");
+                throw new Exception("Erro ao contar os idiomas.", ex);
             }
         }
     }

@@ -33,7 +33,7 @@
         </div>
 
         <!-- Formulário para editar os dados do usuário -->
-        <form asp-controller="Usuario" asp-action="AtualizarUsuario" method="post">
+        <form asp-controller="Usuario" asp-action="AtualizarUsuario" asp-antiforgery="true" method="post">
             <!-- Campo oculto para armazenar o ID do usuário -->
             <input type="hidden" asp-for="Id" value="@Model.Id" />
 

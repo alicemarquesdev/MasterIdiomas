@@ -26,10 +26,10 @@
                     <thead>
                         <tr>
                             <th>Nome</th>
-                            <th>Data de Nascimento</th>
+                            <th>Nascimento</th>
                             <th>Gênero</th>
                             <th>Status</th>
-                            <th>Data de Cadastro</th>
+                            <th>Cadastro</th>
                             <th>Cursos</th>
                             <th>Ações</th>
                         </tr>
@@ -85,7 +85,7 @@
                 <h5 class="modal-title" id="modalAdicionarAlunoLabel">Adicionar Aluno</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form asp-controller="Aluno" asp-action="AddAluno" method="post">
+            <form asp-controller="Aluno" asp-action="AddAluno" asp-antiforgery="true" method="post">
                 <div class="modal-body">
                     <!-- Formulário de Adição de Aluno -->
                     <!-- Campo Nome -->
@@ -131,7 +131,7 @@
                 <h5 class="modal-title" id="modalEditarAlunoLabel">Editar Aluno</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form asp-controller="Aluno" asp-action="AtualizarAluno" method="post">
+            <form asp-controller="Aluno" asp-action="AtualizarAluno" asp-antiforgery="true" method="post">
                 <div class="modal-body">
                     <!-- Formulário de Edição de Aluno -->
                     <!-- Campo Hidden para AlunoId -->

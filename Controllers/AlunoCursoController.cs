@@ -1,5 +1,4 @@
 ﻿using MasterIdiomas.Filters;
-using MasterIdiomas.Repositorio;
 using MasterIdiomas.Repositorio.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,7 +24,7 @@ namespace MasterIdiomas.Controllers
         private readonly ILogger<AlunoCursoController> _logger;
 
         // Construtor que injeta as dependências necessárias
-        public AlunoCursoController(IAlunoCursoRepositorio alunoCursoRepositorio, 
+        public AlunoCursoController(IAlunoCursoRepositorio alunoCursoRepositorio,
                                     ICursoRepositorio cursoRepositorio,
                                     IAlunoRepositorio alunoRepositorio,
                                     ILogger<AlunoCursoController> logger)
@@ -46,7 +45,7 @@ namespace MasterIdiomas.Controllers
                 // Valida os IDs fornecidos
                 if (alunoId <= 0 || cursoId <= 0)
                 {
-                    throw new ArgumentException("Id de aluno/curso inválido.");
+                    return BadRequest(new { mensagem = "Id de aluno/curso inválido." });
                 }
                 // Verifica se o aluno e o curso existem no banco de dados
                 var alunoDb = await _alunoRepositorio.BuscarAlunoPorIdAsync(alunoId);
@@ -54,31 +53,38 @@ namespace MasterIdiomas.Controllers
 
                 if (alunoDb == null)
                 {
-                    throw new InvalidOperationException($"Aluno com ID {alunoId} não encontrado.");
+                    return NotFound(new { mensagem = $"Aluno com ID {alunoId} não encontrado." });
                 }
 
                 if (cursoDb == null)
                 {
-                    throw new InvalidOperationException($"Curso com ID {cursoId} não encontrado.");
+                    return NotFound(new { mensagem = $"Curso com ID {cursoId} não encontrado." });
                 }
 
                 // Adiciona o aluno ao curso
                 await _alunoCursoRepositorio.AddAlunoAoCursoAsync(alunoDb, cursoDb);
 
                 // Exibe mensagem de sucesso
-                TempData["MensagemSucesso"] = "O Aluno foi adicionado ao curso com sucesso!";
-                return Redirect(Request.Headers["Referer"].ToString()); // Redireciona para a página anterior
+                return Ok(new { mensagem = "Aluno adicionado ao curso com sucesso!" });
             }
             catch (Exception ex)
             {
-                // Registra o erro e exibe mensagem de erro
-                _logger.LogError(ex, "Erro ao adicionar aluno ao curso");
-                TempData["MensagemErro"] = $"Erro ao adicionar o aluno ao curso: {ex.Message}";
-                return Redirect(Request.Headers["Referer"].ToString()); // Redireciona para a página anterior
-            }
-        }
+                _logger.LogError(ex, "Erro ao remover aluno do curso.");
 
-        // Método para remover um aluno de um curso
+                if (ex.InnerException is InvalidOperationException || ex is InvalidOperationException)
+                {
+                    TempData["MensagemErro"] = ex.Message;  // Exibe a mensagem amigável
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Erro ao adicionar aluno do curso, tente novamente.";
+                }
+
+                return StatusCode(500, new { mensagem = "Erro interno no servidor." });
+            }
+        }        
+
+        // Método para remover um aluno de um curso, usando fetch
         [HttpPost]
         public async Task<IActionResult> RemoverAlunoDoCurso(int alunoId, int cursoId)
         {
@@ -87,22 +93,30 @@ namespace MasterIdiomas.Controllers
                 // Valida os IDs fornecidos
                 if (alunoId <= 0 || cursoId <= 0)
                 {
-                    throw new ArgumentException("Id de aluno/curso inválido.");
+                    return BadRequest(new { mensagem = "Id de aluno/curso inválido." });
                 }
 
                 // Remove o aluno do curso
                 await _alunoCursoRepositorio.RemoverAlunoDoCursoAsync(alunoId, cursoId);
 
+
                 // Exibe mensagem de sucesso
-                TempData["MensagemSucesso"] = "O Aluno foi removido do curso.";
-                return Redirect(Request.Headers["Referer"].ToString()); // Redireciona para a página anterior
+                return Ok(new { mensagem = "Aluno removido do curso com sucesso!" });
             }
             catch (Exception ex)
             {
-                // Registra o erro e exibe mensagem de erro
-                _logger.LogError(ex, "Erro ao remover aluno do curso");
-                TempData["MensagemErro"] = $"Erro ao remover o aluno do curso: {ex.Message}";
-                return Redirect(Request.Headers["Referer"].ToString()); // Redireciona para a página anterior
+                _logger.LogError(ex, "Erro ao remover aluno do curso.");
+
+                if (ex.InnerException is InvalidOperationException || ex is InvalidOperationException)
+                {
+                    TempData["MensagemErro"] = ex.Message;  // Exibe a mensagem amigável
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Erro ao remover aluno do curso, tente novamente.";
+                }
+
+                return StatusCode(500, new { mensagem = "Erro interno no servidor." });
             }
         }
     }

@@ -32,4 +32,7 @@ editarCursoModal.addEventListener('show.bs.modal', function (event) {
     document.getElementById('CargaHoraria').value = cargaHoraria;
     document.getElementById('MaxAlunos').value = maxAlunos;
     document.getElementById('Status').value = status;
+
+    // Validações para os campos
+    validarCampos();
 });

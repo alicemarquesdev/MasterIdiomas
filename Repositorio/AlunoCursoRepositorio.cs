@@ -17,12 +17,14 @@ namespace MasterIdiomas.Repositorio
     public class AlunoCursoRepositorio : IAlunoCursoRepositorio
     {
         private readonly BancoContext _context;
+        private readonly ILogger<AlunoCursoRepositorio> _logger;
 
 
         // Construtor que injeta o contexto do banco de dados
-        public AlunoCursoRepositorio(BancoContext context)
+        public AlunoCursoRepositorio(BancoContext context, ILogger<AlunoCursoRepositorio> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // Método que verifica se um aluno está matriculado em um curso específico
@@ -32,12 +34,14 @@ namespace MasterIdiomas.Repositorio
             {
                 // Verifica se existe uma associação entre o aluno e o curso na tabela AlunoCurso
                 return await _context.AlunoCurso
+                    .Include(x => x.Curso)
+                    .Include(x => x.Aluno)
                     .FirstOrDefaultAsync(ac => ac.AlunoId == alunoId && ac.CursoId == cursoId);
             }
             catch (Exception ex)
             {
                 // Loga a exceção e lança uma nova com mais detalhes
-                Console.WriteLine($"Erro: {ex.Message}"); // Substitua por um logger em produção
+                _logger.LogError(ex, "Erro ao verificar se o aluno está matriculado no curso.");
                 throw new Exception("Erro ao verificar se o aluno está matriculado no curso.", ex);
             }
         }
@@ -66,7 +70,8 @@ namespace MasterIdiomas.Repositorio
             catch (Exception ex)
             {
                 // Lança a exceção, fornecendo mais detalhes sobre o erro
-                throw new Exception($"Erro ao buscar os alunos do curso. Detalhes: {ex.Message}", ex);
+                _logger.LogError(ex, "Erro ao buscar os alunos do curso.");
+                throw new Exception("Erro ao buscar os alunos do curso.", ex);
             }
         }
 
@@ -94,6 +99,7 @@ namespace MasterIdiomas.Repositorio
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro ao buscar os cursos do aluno.");
                 throw new Exception("Erro ao buscar os cursos do aluno.", ex);
             }
         }
@@ -113,18 +119,20 @@ namespace MasterIdiomas.Repositorio
                 if (!cursosInscritosIds.Any())
                 {
                     return await _context.Cursos
+                        .Where(c => c.QuantidadeAlunos < c.MaxAlunos && c.Status == Enums.StatusCursoEnum.EmAndamento)
                         .OrderBy(c => c.Idioma)
                         .ToListAsync();
                 }
 
-                // Retorna os cursos que não estão nos cursos nos quais o aluno está inscrito
+                // Retorna os cursos que não estão nos cursos nos quais o aluno está inscrito, que não atingiram o limite de alunos e estão em andamento
                 return await _context.Cursos
-                    .Where(c => !cursosInscritosIds.Contains(c.CursoId))
+                    .Where(c => !cursosInscritosIds.Contains(c.CursoId) && c.QuantidadeAlunos < c.MaxAlunos && c.Status == Enums.StatusCursoEnum.EmAndamento)
                     .OrderBy(c => c.Idioma)
                     .ToListAsync();
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro ao buscar cursos não inscritos para o aluno.");
                 throw new Exception("Erro ao buscar cursos não inscritos para o aluno.", ex);
             }
         }
@@ -134,9 +142,11 @@ namespace MasterIdiomas.Repositorio
         {
             try
             {
+                var curso = await _context.Cursos.FirstOrDefaultAsync(x => x.CursoId == cursoId);
+
                 // Obtém os IDs dos alunos inscritos no curso
                 var alunosInscritosNoCurso = await _context.AlunoCurso
-                    .Where(ac => ac.CursoId == cursoId)
+                    .Where(ac => ac.CursoId == cursoId || ac.Curso.Idioma == curso.Idioma) // Não retornar alunos que estão incritos no curso com memsmo idioma.
                     .Select(ac => ac.AlunoId)
                     .ToListAsync();
 
@@ -144,18 +154,20 @@ namespace MasterIdiomas.Repositorio
                 if (!alunosInscritosNoCurso.Any())
                 {
                     return await _context.Alunos
+                        .Where(a => a.QuantidadeCursos < 3 && a.Status == Enums.StatusEnum.Ativo)
                         .OrderBy(a => a.Nome)
                         .ToListAsync();
                 }
 
                 // Retorna os alunos que não estão inscritos no curso
                 return await _context.Alunos
-                    .Where(a => !alunosInscritosNoCurso.Contains(a.AlunoId))
+                    .Where(a => !alunosInscritosNoCurso.Contains(a.AlunoId) && a.QuantidadeCursos < 3 && a.Status == Enums.StatusEnum.Ativo)
                     .OrderBy(a => a.Nome)
                     .ToListAsync();
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro ao buscar alunos não inscritos no curso.");
                 throw new Exception("Erro ao buscar alunos não inscritos no curso.", ex);
             }
         }
@@ -188,7 +200,7 @@ namespace MasterIdiomas.Repositorio
                 }
 
                 // Verifica se o aluno já está matriculado em um curso do mesmo idioma
-                if (cursos.Any(curso => curso.Idioma.Equals(curso.Idioma, StringComparison.OrdinalIgnoreCase)))
+                if (cursos.Any(x => x.Idioma.Equals(curso.Idioma, StringComparison.OrdinalIgnoreCase)))
                 {
                     throw new InvalidOperationException($"O aluno {aluno.Nome} já está matriculado em um curso de {curso.Idioma} e não pode se matricular em outro do mesmo idioma.");
                 }
@@ -200,18 +212,27 @@ namespace MasterIdiomas.Repositorio
                     CursoId = curso.CursoId
                 };
 
+                aluno.QuantidadeCursos++;
+                curso.QuantidadeAlunos++;
+
                 _context.AlunoCurso.Add(alunoCurso);
                 var result = await _context.SaveChangesAsync();
 
                 // Verifica se a operação foi concluída com sucesso
                 if (result <= 0)
                 {
-                    throw new InvalidOperationException("Erro ao adicionar aluno ao curso. Nenhuma alteração foi realizada.");
+                    throw new Exception("Nenhuma alteração foi realizada no banco de dados.");
                 }
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Erro ao adicionar aluno ao curso.");
+                throw new Exception(ex.Message);
             }
             catch (Exception ex)
             {
-                throw new Exception($"Erro inesperado ao adicionar aluno ao curso: {ex.Message}", ex);
+                _logger.LogError(ex, "Erro ao adicionar aluno ao curso.");
+                throw new Exception("Desculpe. Houve um erro ao adicionar o aluno ao curso.", ex);
             }
         }
 
@@ -221,6 +242,7 @@ namespace MasterIdiomas.Repositorio
         {
             try
             {
+                // Verifica se o aluno está matriculado no curso
                 var alunoCurso = await AlunoECursoExistentesAsync(alunoId, cursoId);
 
                 if (alunoCurso == null)
@@ -228,20 +250,39 @@ namespace MasterIdiomas.Repositorio
                     throw new InvalidOperationException("O aluno não está matriculado neste curso.");
                 }
 
-                // Remove o aluno do curso
+                // Atualiza as quantidades de alunos e cursos diretamente no contexto
+                var cursoDb = alunoCurso.Curso; // Acessando o curso relacionado ao aluno
+                var alunoDb = alunoCurso.Aluno; // Acessando o aluno relacionado ao curso
+
+                // Garante que as propriedades não sejam null antes de decrementar
+                cursoDb.QuantidadeAlunos = cursoDb.QuantidadeAlunos > 0 ? cursoDb.QuantidadeAlunos - 1 : 0;
+                alunoDb.QuantidadeCursos = alunoDb.QuantidadeCursos > 0 ? alunoDb.QuantidadeCursos - 1 : 0;
+
+
+                // Remove a associação entre o aluno e o curso
                 _context.AlunoCurso.Remove(alunoCurso);
+
+                // Salva as alterações no banco de dados
                 var result = await _context.SaveChangesAsync();
 
-                // Verifica se nenhum aluno foi removido
+                // Verifica se nenhuma alteração foi realizada
                 if (result <= 0)
                 {
-                    throw new Exception("Nenhum aluno removido do curso.");
+                    throw new Exception("Nenhum aluno foi removido do curso.");
                 }
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Erro ao remover aluno do curso.");
+                throw new Exception(ex.Message);
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Nenhum aluno foi removido do curso. Verifique o banco de dados.", ex);
+                // Lança uma exceção detalhada com a mensagem do erro
+                _logger.LogError(ex, "Erro ao remover aluno do curso.");
+                throw new Exception("Erro ao remover aluno do curso.", ex);
             }
         }
+
     }
 }
