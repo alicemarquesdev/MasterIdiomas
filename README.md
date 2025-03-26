@@ -1,16 +1,7 @@
-﻿<i class="fas fa-globe-americas"></i> # Master Idiomas
+﻿# 🌍 Master Idiomas
 
-<div style="display: flex; justify-content: space-between;">
-  <div style="width: 48%;">
-    <img src="~/img-read-me/master-idiomas-1" style="width: 100%;" alt="MasterIdiomas 1">
-    <img src="~/img-read-me/master-idiomas-2" style="width: 100%;" alt="MasterIdiomas 2">
-  </div>
-  <div style="width: 48%;">
-    <img src="~/img-read-me/master-idiomas-3" style="width: 100%;" alt="MasterIdiomas 3">
-    <img src="~/img-read-me/master-idiomas-4" style="width: 100%;" alt="MasterIdiomas 4">
-  </div>
-</div>
-
+| ![MasterIdiomas 1](assets/master-idiomas-1.jpg) | ![MasterIdiomas 2](assets/master-idiomas-2.jpg) |
+| ![MasterIdiomas 3](assets/master-idiomas-3.jpg) | ![MasterIdiomas 4](assets/master-idiomas-4.jpg) |
 
  [Veja a aplicação em ação](mailto:alicemarques.dev@hotmail.com)
 

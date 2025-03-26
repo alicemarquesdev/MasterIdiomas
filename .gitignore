@@ -5,7 +5,7 @@
 
 # Contém senhas e chaves de acesso
 /appsettings.json
-wwwroot/img-read-me/
+/assets
 
 # User-specific files
 *.rsuser
