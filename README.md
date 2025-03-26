@@ -1,7 +1,15 @@
 ﻿# 🌍 Master Idiomas
 
-| ![MasterIdiomas 1](assets/master-idiomas-1.png) | ![MasterIdiomas 2](assets/master-idiomas-2.png) |
-| ![MasterIdiomas 3](assets/master-idiomas-3.png) | ![MasterIdiomas 4](assets/master-idiomas-4.png) |
+<table>
+  <tr>
+    <td><img src="/assets/master-idiomas-1.png" width="300" /></td>
+    <td><img src="/assets/master-idiomas-2.png" width="300" /></td>
+  </tr>
+  <tr>
+    <td><img src="/assets/master-idiomas-3.png" width="300" /></td>
+    <td><img src="/assets/master-idiomas-4.png" width="300" /></td>
+  </tr>
+</table>
 
  [Veja a aplicação em ação](mailto:alicemarques.dev@hotmail.com)
 
