@@ -46,17 +46,17 @@ Antes de rodar o projeto, é necessário ter as seguintes ferramentas instaladas
 1. **Clonar o Repositório**  
    Primeiro, você precisa clonar o repositório do projeto para sua máquina local. Utilize o Git para isso:
 
-   ```bash
-   git clone https://github.com/alicemarquesdev/MasterIdiomas.git
-   ```
+```bash
+git clone https://github.com/alicemarquesdev/MasterIdiomas.git
+```
 
 2. **Instalar as Dependências do Projeto**
 
 Execute o comando abaixo para restaurar pacotes NuGet
 
- ```bash
+```bash
 dotnet restore
-   ```
+```
 
 - MailKit (4.11.0) | Microsoft.EntityFrameworkCore (9.0.3) | Microsoft.EntityFrameworkCore.Design (9.0.3) | Microsoft.EntityFrameworkCore.SqlServer (9.0.3) | 
 Microsoft.EntityFrameworkCore.Tools (9.0.3) | Newtonsoft.Json (13.0.3) | Serilog.AspNetCore (9.0.0) | Serilog.Sinks.Console (6.0.0) | Serilog.Sinks.File (6.0.0)
