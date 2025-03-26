@@ -2,12 +2,12 @@
 
 <table>
   <tr>
-    <td><img src="/assets/master-idiomas-1.png" width="300" /></td>
-    <td><img src="/assets/master-idiomas-2.png" width="300" /></td>
+    <td><img src="/assets/master-idiomas-1.png" width="450" /></td>
+    <td><img src="/assets/master-idiomas-2.png" width="450" /></td>
   </tr>
   <tr>
-    <td><img src="/assets/master-idiomas-3.png" width="300" /></td>
-    <td><img src="/assets/master-idiomas-4.png" width="300" /></td>
+    <td><img src="/assets/master-idiomas-3.png" width="4500" /></td>
+    <td><img src="/assets/master-idiomas-4.png" width="450" /></td>
   </tr>
 </table>
 
