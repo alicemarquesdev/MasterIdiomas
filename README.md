@@ -41,7 +41,6 @@ Antes de rodar o projeto, é necessário ter as seguintes ferramentas instaladas
 - Compátivel com **Windows** | **macOS** | **Linux**.
 
 
-
 ### **Passo a Passo para Executar o Projeto Localmente**
 
 1. **Clonar o Repositório**  
@@ -52,19 +51,21 @@ Antes de rodar o projeto, é necessário ter as seguintes ferramentas instaladas
    ```
 
 2. **Instalar as Dependências do Projeto**
-O projeto utiliza pacotes do NuGet que são gerenciados pelo Visual Studio.
 
-MailKit (4.11.0) | Microsoft.EntityFrameworkCore (9.0.3) | Microsoft.EntityFrameworkCore.Design (9.0.3) | Microsoft.EntityFrameworkCore.SqlServer (9.0.3) | 
+Execute o comando abaixo para restaurar pacotes NuGet
+
+ ```bash
+dotnet restore
+   ```
+
+- MailKit (4.11.0) | Microsoft.EntityFrameworkCore (9.0.3) | Microsoft.EntityFrameworkCore.Design (9.0.3) | Microsoft.EntityFrameworkCore.SqlServer (9.0.3) | 
 Microsoft.EntityFrameworkCore.Tools (9.0.3) | Newtonsoft.Json (13.0.3) | Serilog.AspNetCore (9.0.0) | Serilog.Sinks.Console (6.0.0) | Serilog.Sinks.File (6.0.0)
 
-3. *Configuração appsettings*
+3. **Configuração appsettings**
 Verifique se você possui um arquivo appsettings.json com as configurações corretas para o banco de dados e outras variáveis.
 Certifique-se de ter o SQL Server instalado e configurado. Crie um banco de dados para o projeto e configure a string de conexão no arquivo.
 Configure também as credenciais SMTP.
 Exemplo de configuração:
-
-
-Exemplo de string de conexão:
 
 ```bash
 {
@@ -117,42 +118,16 @@ Clique em Run ou Iniciar sem Depuração (F5) para rodar o servidor localmente. 
 Após a execução, o projeto estará disponível em http://localhost:5000 (ou a porta configurada no launchSettings.json). 
 Verifique se o sistema está funcionando conforme esperado.
 
-
-## Demonstração
-
-- Link do Site Hospedado:  [Veja a aplicação em ação](mailto:alicemarques.dev@hotmail.com)
-
 ## Licença
 
-Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE.md](LICENSE.md) para detalhes.
-
-MIT License
-
-Copyright (c) 2025 Alice Oliveira Marques
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Este projeto está licenciado sob a Licença MIT. Veja o arquivo [LICENSE.md](LICENSE.md) para mais detalhes.
 
 ## Contato
 
-Alice Marques - [alicemarques.dev@hotmail.com](mailto:alicemarques.dev@hotmail.com)
+Você pode entrar em contato comigo através do e-mail [alicemarques.dev@hotmail.com](mailto:alicemarques.dev@hotmail.com).
 
-Link Projeto: https://github.com/alicemarquesdev/MasterIdiomas.git
+Link do Projeto: [GitHub - Master Idiomas](https://github.com/alicemarquesdev/MasterIdiomas.git)
+
 
 
 
