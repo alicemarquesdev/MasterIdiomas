@@ -1,4 +1,16 @@
-﻿# Master Idiomas
+﻿<i class="fas fa-globe-americas"></i> # Master Idiomas
+
+<div style="display: flex; justify-content: space-between;">
+  <div style="width: 48%;">
+    <img src="~/img-read-me/master-idiomas-1" style="width: 100%;" alt="MasterIdiomas 1">
+    <img src="~/img-read-me/master-idiomas-2" style="width: 100%;" alt="MasterIdiomas 2">
+  </div>
+  <div style="width: 48%;">
+    <img src="~/img-read-me/master-idiomas-3" style="width: 100%;" alt="MasterIdiomas 3">
+    <img src="~/img-read-me/master-idiomas-4" style="width: 100%;" alt="MasterIdiomas 4">
+  </div>
+</div>
+
 
  [Veja a aplicação em ação](mailto:alicemarques.dev@hotmail.com)
 
