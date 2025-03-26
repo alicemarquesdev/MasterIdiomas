@@ -1,5 +1,7 @@
 ﻿# Master Idiomas
 
+ [Veja a aplicação em ação](mailto:alicemarques.dev@hotmail.com)
+
 Master Idiomas é um sistema de gerenciamento para escolas de idiomas, desenvolvido em ASP.NET Core MVC. 
 A plataforma permite o gerenciamento eficiente de cursos, professores, alunos e usuários, oferecendo 
 funcionalidades essenciais para a administração acadêmica e operacional.
@@ -118,7 +120,7 @@ Verifique se o sistema está funcionando conforme esperado.
 
 ## Demonstração
 
-- Link do Site Hospedado
+- Link do Site Hospedado:  [Veja a aplicação em ação](mailto:alicemarques.dev@hotmail.com)
 
 ## Licença
 
@@ -146,7 +148,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+## Contato
 
+Alice Marques - [alicemarques.dev@hotmail.com](mailto:alicemarques.dev@hotmail.com)
+
+Link Projeto: https://github.com/alicemarquesdev/MasterIdiomas.git
 
 
 
