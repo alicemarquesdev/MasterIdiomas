@@ -131,6 +131,12 @@ namespace MasterIdiomas.Controllers
         {
             try
             {
+                if (Idioma == null)
+                {
+                    throw new Exception("idioma é null");
+                }
+
+
                 var curso = new CursoModel
                 {
                     Idioma = "Alemão",
@@ -235,14 +241,14 @@ namespace MasterIdiomas.Controllers
                     if (curso.Status == Enums.StatusCursoEnum.Cancelado)
                     {
                         var cursoAtualizado = await _alunoCursoRepositorio.BuscarAlunosDoCursoAsync(curso.CursoId);
-                        if(cursoAtualizado != null)
+                        if (cursoAtualizado != null)
                         {
                             foreach (var aluno in cursoAtualizado)
                             {
                                 await _alunoCursoRepositorio.RemoverAlunoDoCursoAsync(aluno.AlunoId, curso.CursoId);
                             }
                         }
-                       
+
                         TempData["MensagemSucesso"] = "Curso atualizado com sucesso! O status do curso foi alterado para Cancelado. Os alunos do curso foram todos removidos.";
                     }
                     else
@@ -294,11 +300,10 @@ namespace MasterIdiomas.Controllers
 
                 }
 
-                // Remover o curso do repositório
-                var cursoRemovido = await _cursoRepositorio.RemoverCursoAsync(id);
+                await _cursoRepositorio.RemoverCursoAsync(id);
 
                 TempData["MensagemSucesso"] = "Curso removido com sucesso!";
-                return Redirect(Request.Headers["Referer"].ToString());
+                return RedirectToAction("Cursos");
             }
             catch (Exception ex)
             {
@@ -313,7 +318,7 @@ namespace MasterIdiomas.Controllers
                     TempData["MensagemErro"] = "Erro ao remover curso, tente novamente.";
                 }
 
-                return Redirect(Request.Headers["Referer"].ToString());
+                return RedirectToAction("Cursos");
             }
         }
     }

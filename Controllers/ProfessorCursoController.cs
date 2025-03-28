@@ -52,6 +52,12 @@ namespace MasterIdiomas.Controllers
                     return NotFound(new { mensagem = "Professor/Curso não encontrado." });
                 }
 
+                if(professor.Status == Enums.StatusEnum.Inativo)
+                {
+                    TempData["MensagemErro"] = "O status do professor é inativo. Não poderá ser adicionado ao curso.";
+                    return BadRequest(new { mensagem = "O status do professor é inativo. Não poderá ser adicionado ao curso." });
+                }
+
                 // Verificar se o curso já está associado a outro professor
                 if (curso.ProfessorId != null)
                 {

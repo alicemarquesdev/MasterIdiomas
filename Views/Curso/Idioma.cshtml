@@ -86,14 +86,6 @@
                                                 data-status="@curso.Status">
                                             <i class="bi bi-pencil"></i>
                                         </button>
-                                        <button class="btn btn-danger btn-sm text-decoration-none"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#modalRemocao"
-                                                data-id="@curso.CursoId"
-                                                data-nome="@curso.Idioma"
-                                                data-tipo="curso">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
                                     </td>
                                 </tr>
                             }
@@ -200,7 +192,7 @@
                         <div class="col-md-6 mb-3">
                             <label for="Status" class="form-label">Status</label>
                             <select class="form-control" id="Status" name="Status" required>
-                                <option value="@StatusCursoEnum.EmAndamento">Em Andamento</option>
+                                <option value="@StatusCursoEnum.Ativo">Em Andamento</option>
                                 <option value="@StatusCursoEnum.Concluido">Concluído</option>
                                 <option value="@StatusCursoEnum.Cancelado">Cancelado</option>
                             </select>

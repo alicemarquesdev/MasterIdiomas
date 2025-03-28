@@ -56,15 +56,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     form.action = "/Usuario/RemoverUsuario"; // Remove usuário
                     break;
             }
-
-            // Agora vamos enviar o token junto com a requisição
-            const csrfToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
-            const tokenInput = document.createElement('input');
-            tokenInput.type = 'hidden';
-            tokenInput.name = '__RequestVerificationToken';
-            tokenInput.value = csrfToken;
-
-            // Adiciona o token ao formulário antes de enviá-lo
-            form.appendChild(tokenInput);
-        });    }
+        });
+    }
 });

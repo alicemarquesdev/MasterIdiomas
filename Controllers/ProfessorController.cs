@@ -151,7 +151,7 @@ namespace MasterIdiomas.Controllers
                 {
                     throw new ArgumentNullException("Professor é nulo");
                 }
-
+              
                 if (ModelState.IsValid)
                 {
                     await _professorRepositorio.AtualizarProfessorAsync(professor);
@@ -207,7 +207,7 @@ namespace MasterIdiomas.Controllers
 
                 if (cursos != null && cursos.Any())
                 {
-                    throw new Exception("O professor está associado a cursos e não pode ser removido.");
+                    throw new InvalidOperationException("O professor está associado a cursos e não pode ser removido.");
                 }
 
                 await _professorRepositorio.RemoverProfessorAsync(id);

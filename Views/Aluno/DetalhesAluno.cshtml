@@ -139,7 +139,7 @@
                             @foreach (var curso in Model.CursosDoAluno)
                             {
                                 <tr>
-                                    <td>@curso.Idioma</td>
+                                    <td><a class="fw-bold" asp-route-id="@curso.CursoId" asp-controller="Curso" asp-action="DetalhesCurso">@curso.Idioma</a></td>
                                     <td>@curso.DataInicio.ToString("dd/MM/yyyy")</td>
                                     <td>@curso.Turno</td>
                                     <td>@curso.Nivel</td>
@@ -201,7 +201,7 @@
                             @foreach (var curso in Model.CursosDisponiveisParaOAluno)
                             {
                                 <tr>
-                                    <td>@curso.Idioma</td>
+                                    <td><a class="fw-bold" asp-route-id="@curso.CursoId" asp-controller="Curso" asp-action="DetalhesCurso">@curso.Idioma</a></td>
                                     <td>@curso.DataInicio.ToString("dd/MM/yyyy")</td>
                                     <td>@curso.Turno</td>
                                     <td>@curso.Nivel</td>

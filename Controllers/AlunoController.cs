@@ -178,7 +178,9 @@ namespace MasterIdiomas.Controllers
                 {
                     throw new ArgumentNullException(nameof(id), "O id é inválido");
                 }
-                await _alunoRepositorio.RemoverAlunoAsync(id);
+
+               await _alunoRepositorio.RemoverAlunoAsync(id);
+
                 TempData["MensagemSucesso"] = "O aluno foi removido com sucesso!";
                 return Redirect(Request.Headers["Referer"].ToString());
             }

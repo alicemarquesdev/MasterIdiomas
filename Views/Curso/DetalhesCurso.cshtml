@@ -134,7 +134,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="Status" class="form-label">Status</label>
                                 <select class="form-control" asp-for="@Model.Curso.Status" required>
-                                    <option value="@StatusCursoEnum.EmAndamento">Em Andamento</option>
+                                    <option value="@StatusCursoEnum.Ativo">Em Andamento</option>
                                     <option value="@StatusCursoEnum.Concluido">Concluído</option>
                                     <option value="@StatusCursoEnum.Cancelado">Cancelado</option>
                                 </select>
@@ -184,7 +184,7 @@
                             foreach (var aluno in Model.AlunosDoCurso)
                             {
                                 <tr>
-                                    <td>@aluno.Nome</td>
+                                    <td><a class="font-weight-bold" asp-route-Id="@aluno.AlunoId" asp-controller="Aluno" asp-action="DetalhesAluno">@aluno.Nome</a></td>
                                     <td>@aluno.DataNascimento.ToString("dd/MM/yyyy")</td>
                                     <td>@aluno.Genero</td>
                                     <td>@aluno.Status</td>

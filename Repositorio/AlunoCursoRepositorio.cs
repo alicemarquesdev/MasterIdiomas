@@ -119,14 +119,14 @@ namespace MasterIdiomas.Repositorio
                 if (!cursosInscritosIds.Any())
                 {
                     return await _context.Cursos
-                        .Where(c => c.QuantidadeAlunos < c.MaxAlunos && c.Status == Enums.StatusCursoEnum.EmAndamento)
+                        .Where(c => c.QuantidadeAlunos < c.MaxAlunos && c.Status == Enums.StatusCursoEnum.Ativo)
                         .OrderBy(c => c.Idioma)
                         .ToListAsync();
                 }
 
                 // Retorna os cursos que não estão nos cursos nos quais o aluno está inscrito, que não atingiram o limite de alunos e estão em andamento
                 return await _context.Cursos
-                    .Where(c => !cursosInscritosIds.Contains(c.CursoId) && c.QuantidadeAlunos < c.MaxAlunos && c.Status == Enums.StatusCursoEnum.EmAndamento)
+                    .Where(c => !cursosInscritosIds.Contains(c.CursoId) && c.QuantidadeAlunos < c.MaxAlunos && c.Status == Enums.StatusCursoEnum.Ativo)
                     .OrderBy(c => c.Idioma)
                     .ToListAsync();
             }
@@ -227,7 +227,7 @@ namespace MasterIdiomas.Repositorio
             catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex, "Erro ao adicionar aluno ao curso.");
-                throw new Exception(ex.Message);
+                throw new InvalidOperationException(ex.Message);
             }
             catch (Exception ex)
             {
@@ -274,7 +274,7 @@ namespace MasterIdiomas.Repositorio
             catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex, "Erro ao remover aluno do curso.");
-                throw new Exception(ex.Message);
+                throw new InvalidOperationException(ex.Message);
             }
             catch (Exception ex)
             {

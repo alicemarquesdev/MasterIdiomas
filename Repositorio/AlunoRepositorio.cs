@@ -18,12 +18,14 @@ namespace MasterIdiomas.Repositorio
     public class AlunoRepositorio : IAlunoRepositorio
     {
         private readonly BancoContext _context;
+        private readonly IAlunoCursoRepositorio _alunoCursoRepositorio;
         private readonly ILogger<AlunoRepositorio> _logger;
 
         // Construtor para injeção do contexto do banco de dados
-        public AlunoRepositorio(BancoContext context, ILogger<AlunoRepositorio> logger)
+        public AlunoRepositorio(BancoContext context, IAlunoCursoRepositorio alunoCursoRepositorio,ILogger<AlunoRepositorio> logger)
         {
             _context = context;
+            _alunoCursoRepositorio = alunoCursoRepositorio;
             _logger = logger;
         }
 
@@ -51,19 +53,13 @@ namespace MasterIdiomas.Repositorio
             try
             {
                 // Obtém todos os alunos e seus cursos relacionados
-                var alunos = await _context.Alunos
+                return await _context.Alunos
                     .Include(a => a.AlunoCurso)
                     .ThenInclude(ac => ac.Curso)
                     .OrderBy(n => n.Nome)
                     .ToListAsync();
 
-                // Adiciona a quantidade de cursos para cada aluno
-                foreach (var aluno in alunos)
-                {
-                    aluno.QuantidadeCursos = aluno.AlunoCurso?.Count() ?? 0;
-                }
-
-                return alunos;
+             
             }
             catch (Exception ex)
             {
@@ -121,7 +117,7 @@ namespace MasterIdiomas.Repositorio
             catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex, "Erro ao adicionar aluno.");
-                throw new Exception(ex.Message);
+                throw new InvalidOperationException(ex.Message);
             }
             catch (Exception ex)
             {
@@ -168,7 +164,7 @@ namespace MasterIdiomas.Repositorio
             catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex, "Erro ao atualizar aluno.");
-                throw new Exception(ex.Message);
+                throw new InvalidOperationException(ex.Message);
             }
             catch (Exception ex)
             {
@@ -188,6 +184,12 @@ namespace MasterIdiomas.Repositorio
                 if (alunoDb == null)
                 {
                     throw new Exception("Aluno não encontrado no banco de dados");
+                }
+
+                var cursosDoAluno = await _alunoCursoRepositorio.BuscarCursosDoAlunoAsync(id);
+                foreach(var curso in cursosDoAluno)
+                {
+                    await _alunoCursoRepositorio.RemoverAlunoDoCursoAsync(id, curso.CursoId);
                 }
 
                 // Remove o aluno do banco de dados

@@ -11,7 +11,7 @@ namespace MasterIdiomas.Models
 
         [Required(ErrorMessage = "Digite o seu nome.")]
         [StringLength(30, ErrorMessage = "O nome deve ter no máximo 30 caracteres.")]
-        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "O nome deve conter apenas letras e espaços.")]
+        [RegularExpression(@"^[a-zA-Zá-úÁ-Úà-ùÀ-Ùã-õÃ-ÕçÇ\s]+$", ErrorMessage = "O nome deve conter apenas letras e espaços.")]
         public required string Nome { get; set; }
 
         [Required(ErrorMessage = "Por favor, selecione o gênero.")]
@@ -25,7 +25,7 @@ namespace MasterIdiomas.Models
 
         public StatusEnum Status { get; set; } = StatusEnum.Ativo;
 
-        public int? QuantidadeCursos { get; set; }
+        public int QuantidadeCursos { get; set; } = 0;
 
         public virtual IList<AlunoCursoModel> AlunoCurso { get; set; } = new List<AlunoCursoModel>();
     }

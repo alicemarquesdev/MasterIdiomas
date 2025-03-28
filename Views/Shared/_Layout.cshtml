@@ -94,7 +94,8 @@
                 <div class="modal-body">
                     <p>Tem certeza que deseja remover <span id="itemNome"></span>?</p>
                     <form method="post">
-                        <input type="hidden" name="__RequestVerificationToken" value="valor_do_token_aqui">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="__RequestVerificationToken" value="@Html.AntiForgeryToken()">
                         <input type="hidden" name="id" id="itemId">
                         <input type="hidden" id="cursoId" name="cursoId"> <!-- Para remover aluno de um curso -->
                         <button type="submit" class="btn btn-danger w-100 mb-1">Remover</button>

@@ -62,12 +62,10 @@ namespace MasterIdiomas.Repositorio
             try
             {
                 // Buscar todos os professores e seus cursos
-                var professores = await _context.Professores
+                return await _context.Professores
                     .Include(p => p.Cursos)  // Inclui os cursos do professor
                     .OrderBy(p => p.Nome)
                     .ToListAsync();
-
-                return professores;
             }
             catch (Exception ex)
             {

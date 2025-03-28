@@ -13,7 +13,6 @@ namespace MasterIdiomas.Data
 
         // DbSets para representar as tabelas do banco de dados
         public DbSet<UsuarioModel> Usuarios { get; set; }
-
         public DbSet<CursoModel> Cursos { get; set; }
         public DbSet<AlunoModel> Alunos { get; set; }
         public DbSet<ProfessorModel> Professores { get; set; }
@@ -41,14 +40,14 @@ namespace MasterIdiomas.Data
                     .HasOne(ac => ac.Aluno)  // Cada AlunoCurso está relacionado a um Aluno
                     .WithMany(a => a.AlunoCurso) // Cada Aluno pode ter muitos AlunoCursos
                     .HasForeignKey(ac => ac.AlunoId) // Chave estrangeira para AlunoId
-                    .OnDelete(DeleteBehavior.Cascade);  // Configuração para excluir registros relacionados ao Aluno
+                    .OnDelete(DeleteBehavior.Restrict);  // Configuração para excluir registros relacionados ao Aluno
 
 
                 modelBuilder.Entity<AlunoCursoModel>()
                     .HasOne(ac => ac.Curso)  // Cada AlunoCurso está relacionado a um Curso
                     .WithMany(c => c.AlunoCurso) // Cada Curso pode ter muitos AlunoCursos
                     .HasForeignKey(ac => ac.CursoId) // Chave estrangeira para CursoId
-                    .OnDelete(DeleteBehavior.Cascade);  // Configuração para excluir registros relacionados ao Curso
+                    .OnDelete(DeleteBehavior.Restrict);  // Configuração para excluir registros relacionados ao Curso
 
                 base.OnModelCreating(modelBuilder);  // Chama a implementação base para garantir que todas as configurações sejam aplicadas
             }

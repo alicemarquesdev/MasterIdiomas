@@ -24,15 +24,18 @@ namespace MasterIdiomas.Repositorio
     {
         private readonly BancoContext _context;
         private readonly IAlunoCursoRepositorio _alunoCursoRepositorio;
+        private readonly IProfessorCursoRepositorio _professorCursoRepositorio;
         private readonly ILogger<CursoRepositorio> _logger;
 
         // Construtor que recebe o contexto do banco e o repositório de alunos associados a cursos
         public CursoRepositorio(BancoContext context,
                                 IAlunoCursoRepositorio alunoCursoRepositorio,
+                                IProfessorCursoRepositorio professorCursoRepositorio,
                                 ILogger<CursoRepositorio> logger)
         {
             _context = context;
             _alunoCursoRepositorio = alunoCursoRepositorio;
+            _professorCursoRepositorio = professorCursoRepositorio;
             _logger = logger;
         }
 
@@ -79,19 +82,12 @@ namespace MasterIdiomas.Repositorio
             try
             {
                 // Retorna todos os cursos, incluindo alunos e professores, ordenados pelo idioma
-                var cursos = await _context.Cursos
+                return await _context.Cursos
                     .Include(a => a.AlunoCurso).ThenInclude(a => a.Aluno)
                     .Include(c => c.Professor)
                     .OrderBy(x => x.Idioma)
                     .ToListAsync();
 
-                // Contagem da quantidade de alunos para cada curso
-                foreach (var curso in cursos)
-                {
-                    curso.QuantidadeAlunos = curso.AlunoCurso.Count();
-                }
-
-                return cursos;
             }
             catch (Exception ex)
             {
@@ -182,7 +178,7 @@ namespace MasterIdiomas.Repositorio
                 }
 
                 // Define o status do curso como "Em Andamento" antes de adicionar ao banco de dados
-                curso.Status = StatusCursoEnum.EmAndamento;
+                curso.Status = StatusCursoEnum.Ativo;
 
                 // Adiciona o curso ao contexto do banco de dados
                 await _context.Cursos.AddAsync(curso);
@@ -230,7 +226,7 @@ namespace MasterIdiomas.Repositorio
 
                 // Verifica se o número de idiomas já cadastrados é maior ou igual ao limite
                 var idiomasExistentes = await BuscarIdiomasAsync();
-                if (idiomasExistentes.Count >= MAX_IDIOMAS_PARA_CURSOS)
+                if (idiomasExistentes.Count > MAX_IDIOMAS_PARA_CURSOS)
                 {
                     // Lança uma exceção se o limite de idiomas for atingido
                     throw new InvalidOperationException($"Não é possível criar mais de {MAX_IDIOMAS_PARA_CURSOS} cursos de idiomas diferentes.");
@@ -282,10 +278,18 @@ namespace MasterIdiomas.Repositorio
 
                 // Verificar a quantidade de cursos em andamento antes de remover
                 var cursosEmAndamento = CursosEmAndamento();
-                if (cursoDb.Status == StatusCursoEnum.EmAndamento && cursosEmAndamento == 1)
+                if (cursoDb.Status == StatusCursoEnum.Ativo && cursosEmAndamento == 1)
                 {
                     throw new InvalidOperationException("Limites do sistema foram atingidos. Não é possível excluir o curso.");
                 }
+
+                var alunosDoCurso = await _alunoCursoRepositorio.BuscarAlunosDoCursoAsync(id);
+                foreach(var aluno in alunosDoCurso)
+                {
+                    await _alunoCursoRepositorio.RemoverAlunoDoCursoAsync(aluno.AlunoId, id);
+                }
+
+                await _professorCursoRepositorio.RemoverProfessorDoCursoAsync(cursoDb);
 
                 // Remove o curso do banco de dados
                 _context.Cursos.Remove(cursoDb);
@@ -319,9 +323,7 @@ namespace MasterIdiomas.Repositorio
             {
                 // Conta os cursos com o status "Em Andamento"
                 return _context.Cursos
-                    .Where(x => x.Status == StatusCursoEnum.EmAndamento)
-                    .Select(c => c.Idioma)
-                    .Distinct()
+                    .Where(x => x.Status == StatusCursoEnum.Ativo)
                     .Count();
             }
             catch (Exception ex)

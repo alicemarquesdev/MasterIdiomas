@@ -29,9 +29,9 @@ namespace MasterIdiomas.Models
         [Range(10, 30, ErrorMessage = "O número máximo de alunos deve estar entre 10 e 30.")]
         public required int MaxAlunos { get; set; }
 
-        public int? QuantidadeAlunos { get; set; }
+        public int QuantidadeAlunos { get; set; } = 0;
 
-        public StatusCursoEnum Status { get; set; } = StatusCursoEnum.EmAndamento;
+        public StatusCursoEnum Status { get; set; } = StatusCursoEnum.Ativo;
 
         public DateTime? DataAtualizacao { get; set; }
 

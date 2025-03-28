@@ -98,6 +98,9 @@
                             </select>
                             <span class="text-danger">@Html.ValidationMessageFor(x => x.Professor.Status)</span>
                         </div>
+                        <small class="text-danger">
+                            <strong>Atenção:</strong> Se o status do professor for atualizado para inativo, ele será removido de todos os cursos.
+                        </small>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="bg-transparent border-0 text-primary" data-bs-dismiss="modal">Fechar</button>
