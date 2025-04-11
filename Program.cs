@@ -60,7 +60,7 @@ namespace MasterIdiomas
             // Configuração de session
             builder.Services.AddSession(o =>
             {
-                o.IdleTimeout = TimeSpan.FromMinutes(50);
+                o.IdleTimeout = TimeSpan.FromMinutes(30);
                 o.Cookie.HttpOnly = true;
                 o.Cookie.IsEssential = true;
             });
@@ -99,7 +99,10 @@ namespace MasterIdiomas
             app.UseStatusCodePagesWithRedirects("/Home/Error");
 
             app.UseRouting();
+
             app.UseSession();
+
+            app.UseAuthentication();
             app.UseAuthorization();
 
             // Adicionar compressão de resposta
