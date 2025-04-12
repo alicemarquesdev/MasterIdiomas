@@ -5,6 +5,8 @@
 
 # Contém senhas e chaves de acesso
 /appsettings.json
+/appsettings.*.json
+/Migrations
 
 # User-specific files
 *.rsuser
@@ -364,3 +366,4 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/Properties/ServiceDependencies
