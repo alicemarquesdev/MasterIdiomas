@@ -3,10 +3,12 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-# Contém senhas e chaves de acesso
+# ContÃ©m senhas e chaves de acesso
 /appsettings.json
+/appsettings.Development.json
 /appsettings.*.json
 /Migrations
+/logs
 
 # User-specific files
 *.rsuser
