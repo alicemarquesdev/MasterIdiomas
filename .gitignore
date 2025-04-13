@@ -5,6 +5,7 @@
 
 # Contém senhas e chaves de acesso
 /appsettings.json
+/appsettings.Development.json
 /appsettings.*.json
 /Migrations
 
