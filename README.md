@@ -1,4 +1,4 @@
-﻿# 🌍 Master Idiomas - [Live Master Idiomas](https://masteridiomas-e5b0dve7cderhqec.brazilsouth-01.azurewebsites.net/)
+﻿# 🌍 Master Idiomas
 
 ![MasterIdiomas 2](assets/master-idiomas-2.png)
 
