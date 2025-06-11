@@ -4,6 +4,7 @@ using MasterIdiomas.Repositorio;
 using MasterIdiomas.Repositorio.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using System;
 
 namespace MasterIdiomas
 {
@@ -51,8 +52,18 @@ namespace MasterIdiomas
             builder.Services.AddAntiforgery(options => options.HeaderName = "RequestVerificationToken");
 
             // Configurar o contexto de banco de dados
-            builder.Services.AddDbContext<BancoContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
+            var connectionString = builder.Configuration.GetConnectionString("DataBase");
+
+            if (builder.Environment.IsDevelopment())
+            {
+                builder.Services.AddDbContext<BancoContext>(options =>
+                    options.UseSqlServer(connectionString));
+            }
+            else
+            {
+                builder.Services.AddDbContext<BancoContext>(options =>
+                    options.UseNpgsql(connectionString));
+            }
 
             // Configuração de Repositórios
             RegisterRepositories(builder);

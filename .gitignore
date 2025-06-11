@@ -6,8 +6,10 @@
 # Contém senhas e chaves de acesso
 /appsettings.json
 /appsettings.Development.json
+/appsettings.Production.json
 /appsettings.*.json
 /Migrations
+/logs
 
 # User-specific files
 *.rsuser
