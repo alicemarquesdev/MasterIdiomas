@@ -1,0 +1,313 @@
+﻿@model CursoViewModel
+@{
+    ViewData["Title"] = "Cursos";
+}
+
+<div class="container-fluid px-4">
+
+    <div class="d-flex align-items-center">
+        <h1 class="mt-4">Cursos</h1>
+        <h6 class="mt-5 me-4 ms-auto fw-bold">Total de Cursos: @Model.Cursos.Count</h6>
+    </div>
+
+    <div class="card shadow mb-4 mt-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Lista Geral de Cursos</h6>
+            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAddCurso">
+                <i class="bi bi-book"> Criar Curso</i>
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Curso</th>
+                            <th>Turno</th>
+                            <th>Nível</th>
+                            <th>Início</th>
+                            <th>Alunos</th>
+                            <th>Máx.Alunos</th>
+                            <th>Status</th>
+                            <th>Professor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Cursos != null && Model.Cursos.Any())
+                        {
+                            foreach (var curso in Model.Cursos)
+                            {
+                                <tr>
+                                    <td><a class="fw-bold" asp-route-id="@curso.CursoId" asp-controller="Curso" asp-action="DetalhesCurso">@curso.Idioma</a></td>
+                                    <td>@curso.Turno</td>
+                                    <td>@curso.Nivel</td>
+                                    <td>@curso.DataInicio.ToString("dd/MM/yyyy")</td>
+                                    <td>@curso.QuantidadeAlunos</td>
+                                    <td>@curso.MaxAlunos</td>
+                                    <td>@curso.Status</td>
+                                    <td class="d-flex flex-column text-center">
+                                        @if (curso.Professor != null)
+                                        {
+                                            <a class="text-decoration-none fw-bold" asp-controller="Professor" asp-action="DetalhesProfessor" asp-route-id="@curso.ProfessorId"> @curso.Professor.Nome</a>
+                                        }
+                                        else
+                                        {
+                                            <button class="bg-transparent border-0 text-primary fw-bold"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalAddProfessor"
+                                                    data-cursoid="@curso.CursoId">
+                                                Adicionar
+                                            </button>
+                                        }
+                                    </td>
+
+                                    <td class="text-center">
+                                        <button class="btn btn-primary btn-sm text-decoration-none"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalEditarCurso"
+                                                data-curso-id="@curso.CursoId"
+                                                data-idioma="@curso.Idioma"
+                                                data-turno="@curso.Turno"
+                                                data-nivel="@curso.Nivel"
+                                                data-data-inicio="@curso.DataInicio.ToString("yyyy-MM-dd")"
+                                                data-carga-horaria="@curso.CargaHoraria"
+                                                data-max-alunos="@curso.MaxAlunos"
+                                                data-status="@curso.Status">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm text-decoration-none"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalRemocao"
+                                                data-id="@curso.CursoId"
+                                                data-nome="@curso.Idioma"
+                                                data-tipo="curso">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-3">Nenhum curso encontrado.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Adicionar Professor -->
+<div class="modal fade" id="modalAddProfessor" tabindex="-1" aria-labelledby="modalAddProfessorLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAddProfessorLabel">Adicionar Professor ao Curso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formAdicionarProfessor" asp-controller="ProfessorCurso" asp-action="AddProfessorAoCurso" method="post">
+                    <input type="hidden" id="cursoIdInput" name="CursoId" />
+
+                    <div class="mb-4">
+                        <label for="ProfessorId" class="form-label">Selecione um professor:</label>
+                        <select class="form-control" name="ProfessorId" id="ProfessorId" required>
+                            <option value="" selected>Selecione</option>
+                            @if (Model.Professores != null && Model.Professores.Any())
+                            {
+                                foreach (var professor in Model.Professores)
+                                {
+                                    <option value="@professor.ProfessorId">@professor.Nome</option>
+                                }
+                            }
+                            else
+                            {
+                                <option value="">Nenhum professor encontrado</option>
+                            }
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mb-1">Adicionar Professor</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Adicionar Curso -->
+<div class="modal fade" id="modalAddCurso" tabindex="-1" aria-labelledby="modalAddCursoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAddCursoLabel">Adicionar Novo Curso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-controller="Curso" asp-action="AddCurso" asp-antiforgery="true" method="post">
+
+                    <!-- Linha 1 -->
+                    <div class="row">
+                        <div class="mb-3 col-md-6">
+                            <label for="Idioma" class="form-label">Idioma</label>
+                            <select class="form-control" asp-for="Curso.Idioma" required>
+                                <option value="" selected>Selecione</option>
+                                @if (Model.Idiomas != null && Model.Idiomas.Any())
+                                {
+                                    foreach (var idioma in Model.Idiomas)
+                                    {
+                                        <option value="@idioma">@idioma</option>
+                                    }
+                                }
+                            </select>
+                            <span class="text-danger">@Html.ValidationMessageFor(x => x.Curso.Idioma)</span>
+                        </div>
+
+                        <div class="mb-3 col-md-6">
+                            <label for="Turno" class="form-label">Turno</label>
+                            <select class="form-control" asp-for="Curso.Turno" required>
+                                <option value="" selected>Selecione</option>
+                                <option value="@TurnoEnum.Manha">Manhã</option>
+                                <option value="@TurnoEnum.Tarde">Tarde</option>
+                                <option value="@TurnoEnum.Noite">Noite</option>
+                            </select>
+                            <span class="text-danger">@Html.ValidationMessageFor(x => x.Curso.Turno)</span>
+                        </div>
+                    </div>
+
+                    <!-- Linha 2 -->
+                    <div class="row">
+                        <div class="mb-3 col-md-6">
+                            <label for="Nivel" class="form-label">Nível</label>
+                            <select class="form-control" asp-for="Curso.Nivel" required>
+                                <option value="" selected>Selecione</option>
+                                <option value="@NivelEnum.Iniciante">Iniciante</option>
+                                <option value="@NivelEnum.Intermediario">Intermediário</option>
+                                <option value="@NivelEnum.Avancado">Avançado</option>
+                            </select>
+                            <span class="text-danger">@Html.ValidationMessageFor(x => x.Curso.Nivel)</span>
+                        </div>
+
+                        <div class="mb-3 col-md-6">
+                            <label for="DataInicio" class="form-label">Data de Início</label>
+                            <input type="date" class="form-control" asp-for="Curso.DataInicio"
+                                   min="@DateTime.Now.ToString("yyyy-MM-dd")" required>
+                            <span class="text-danger">@Html.ValidationMessageFor(x => x.Curso.DataInicio)</span>
+                        </div>
+                    </div>
+
+                    <!-- Linha 3 -->
+                    <div class="row">
+                        <div class="mb-3 col-md-6">
+                            <label for="CargaHoraria" class="form-label">Carga Horária</label>
+                            <input type="number" class="form-control" asp-for="Curso.CargaHoraria"
+                                   placeholder="Horas de curso." min="10" max="50" required>
+                            <span class="text-danger">@Html.ValidationMessageFor(x => x.Curso.CargaHoraria)</span>
+                        </div>
+
+                        <div class="mb-3 col-md-6">
+                            <label for="MaxAlunos" class="form-label">Quantidade Máx. de Alunos</label>
+                            <input type="number" class="form-control" asp-for="Curso.MaxAlunos"
+                                   min="10" max="30" required>
+                            <span class="text-danger">@Html.ValidationMessageFor(x => x.Curso.MaxAlunos)</span>
+                        </div>
+                    </div>
+
+                    <!-- Botões -->
+                    <button type="submit" class="btn btn-primary w-100">Salvar Curso</button>
+                    <a class="mt-1 btn btn-secondary d-block" asp-controller="Curso" asp-action="Cursos" role="button">Voltar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Curso -->
+<div class="modal fade" id="modalEditarCurso" tabindex="-1" aria-labelledby="modalEditarCursoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEditarCursoLabel">Editar Curso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-controller="Curso" asp-action="AtualizarCurso" id="formEditarCurso" asp-antiforgery="true" method="post">
+                    <input type="hidden" id="CursoId" name="CursoId" />
+
+                    <!-- Inputs lado a lado -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="Idioma" class="form-label">Idioma</label>
+                            <select class="form-control" name="Idioma" id="Idioma" required>
+                                <option value="" selected>Selecione</option>
+                                @if (Model.Idiomas != null && Model.Idiomas.Any())
+                                {
+                                    foreach (var idioma in Model.Idiomas)
+                                    {
+                                        <option value="@idioma">@idioma</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="Turno" class="form-label">Turno</label>
+                            <select class="form-control" name="Turno" id="Turno" required>
+                                <option value="@TurnoEnum.Manha">Manhã</option>
+                                <option value="@TurnoEnum.Tarde">Tarde</option>
+                                <option value="@TurnoEnum.Noite">Noite</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Inputs lado a lado -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="Nivel" class="form-label">Nível</label>
+                            <select class="form-control" name="Nivel" id="Nivel" required>
+                                <option value="@NivelEnum.Iniciante">Iniciante</option>
+                                <option value="@NivelEnum.Intermediario">Intermediário</option>
+                                <option value="@NivelEnum.Avancado">Avançado</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="Status" class="form-label">Status</label>
+                            <select class="form-control" id="Status" name="Status" required>
+                                <option value="@StatusCursoEnum.Ativo">Em Andamento</option>
+                                <option value="@StatusCursoEnum.Concluido">Concluído</option>
+                                <option value="@StatusCursoEnum.Cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="DataInicio" class="form-label">Data de Início</label>
+                        <input type="date" class="form-control" id="DataInicio" name="DataInicio" min="2025-01-01" title="Data de inicio mínima 01/01/2025." required />
+
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="CargaHoraria" class="form-label">Carga Horária</label>
+                        <input type="number" class="form-control" id="CargaHoraria" name="CargaHoraria" min="10" max="50" title="A carga horária deve estar entre 10 e 50 horas." required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="MaxAlunos" class="form-label">Quantidade Máxima de Alunos</label>
+                        <input type="number" class="form-control" id="MaxAlunos" name="MaxAlunos" min="10" max="30" title="O número máximo de alunos deve estar entre 10 e 30." required />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mb-1" id="btnSalvarCurso">Salvar Alterações</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/editar-curso-modal.js"></script>
+    <script src="~/js/add-professor-curso-modal.js"></script>
+}

@@ -1,0 +1,313 @@
+﻿@model CursoViewModel
+
+
+@{
+    ViewData["Title"] = "Curso - Detalhes";
+}
+
+<div class="container-fluid px-4">
+    <ol class="breadcrumb mt-1 bg-transparent">
+        <li class="breadcrumb-item">
+            <a asp-controller="Curso" asp-action="Cursos" class="text-decoration-none">Cursos</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Curso - @Model.Curso.Idioma</li>
+    </ol>
+
+    <h1 class="mt-2 mb-4">@Model.Curso.Idioma</h1>
+
+    <div class="card shadow p-4 mb-4">
+        <div class="d-flex">
+            <h5 class="card-title text-primary me-2">Informações do Curso</h5>
+            <div class="ms-auto">
+                <!-- Botão para abrir o Modal -->
+                <button class="btn-primary btn-sm text-decoration-none" data-bs-toggle="modal" data-bs-target="#modalEditarCurso" data-cursoid="@Model.Curso.CursoId">
+                    <i class="bi bi-pencil"></i>
+                </button>
+
+                <button class="btn-danger btn-sm text-decoration-none"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalRemocao"
+                        data-id="@Model.Curso.CursoId"
+                        data-nome="@Model.Curso.Idioma"
+                        data-tipo="curso">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <p><strong>Idioma:</strong> @Model.Curso.Idioma</p>
+                <p><strong>Turno:</strong> @Model.Curso.Turno</p>
+                <p><strong>Nível:</strong> @Model.Curso.Nivel</p>
+                <p><strong>Data de Início:</strong> @Model.Curso.DataInicio.ToString("dd/MM/yyyy")</p>
+
+            </div>
+            <div class="col-md-6">
+                <p>
+                    <strong>Professor:</strong> @if (Model.Curso.Professor != null)
+                    {
+                        <a class="text-decoration-none fw-bold" asp-controller="Professor" asp-action="DetalhesProfessor" asp-route-id="@Model.Curso.ProfessorId"> @Model.Curso.Professor.Nome</a>
+                    }
+                    else
+                    {
+                        <button class="fw-bold border-0 bg-transparent text-primary"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalAddProfessor"
+                                data-cursoid="@Model.Curso.CursoId">
+                            Adicionar
+                        </button>
+                    }
+                </p>
+                <p><strong>Carga Horária:</strong> @Model.Curso.CargaHoraria</p>
+                <p><strong>Quantidade de Alunos:</strong> @Model.Curso.QuantidadeAlunos</p>
+                <p><strong>Quantidade Máxima de Alunos:</strong> @Model.Curso.MaxAlunos</p>
+                <p><strong>Status:</strong> @Model.Curso.Status</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Curso -->
+    <div class="modal fade" id="modalEditarCurso" tabindex="-1" aria-labelledby="modalEditarCursoLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditarCursoLabel">Editar Curso</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form asp-controller="Curso" asp-action="AtualizarCurso" id="formEditarCurso" asp-antiforgery="true" method="post">
+                        <input type="hidden" asp-for="@Model.Curso.CursoId" />
+
+                        <!-- Linha de Inputs -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="Idioma" class="form-label">Idioma</label>
+                                <select class="form-control" asp-for="@Model.Curso.Idioma" required>
+                                    <option value="" selected>Selecione</option>
+                                    @if (Model.Idiomas != null && Model.Idiomas.Any())
+                                    {
+                                        foreach (var idioma in Model.Idiomas)
+                                        {
+                                            <option value="@idioma">@idioma</option>
+                                        }
+                                    }
+                                </select>
+                                <span class="text-danger">@Html.ValidationMessageFor(x => x.Curso.Idioma)</span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="Turno" class="form-label">Turno</label>
+                                <select class="form-control" asp-for="@Model.Curso.Turno" required>
+                                    <option value="@TurnoEnum.Manha">Manhã</option>
+                                    <option value="@TurnoEnum.Tarde">Tarde</option>
+                                    <option value="@TurnoEnum.Noite">Noite</option>
+                                </select>
+                                <span class="text-danger">@Html.ValidationMessageFor(x => x.Curso.Turno)</span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="Nivel" class="form-label">Nível</label>
+                                <select class="form-control" asp-for="@Model.Curso.Nivel" required>
+                                    <option value="@NivelEnum.Iniciante">Iniciante</option>
+                                    <option value="@NivelEnum.Intermediario">Intermediário</option>
+                                    <option value="@NivelEnum.Avancado">Avançado</option>
+                                </select>
+                                <span class="text-danger">@Html.ValidationMessageFor(x => x.Curso.Nivel)</span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="DataInicio" class="form-label">Data de Início</label>
+                                <input type="date" class="form-control" asp-for="@Model.Curso.DataInicio" min="2025-01-01" title="Data de inicio mínima 01/01/2025." required />
+                                <span class="text-danger">@Html.ValidationMessageFor(x => x.Curso.DataInicio)</span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="CargaHoraria" class="form-label">Carga Horária</label>
+                                <input type="number" class="form-control" asp-for="@Model.Curso.CargaHoraria" min="10" max="50" required />
+                                <span class="text-danger">@Html.ValidationMessageFor(x => x.Curso.CargaHoraria)</span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="Status" class="form-label">Status</label>
+                                <select class="form-control" asp-for="@Model.Curso.Status" required>
+                                    <option value="@StatusCursoEnum.Ativo">Em Andamento</option>
+                                    <option value="@StatusCursoEnum.Concluido">Concluído</option>
+                                    <option value="@StatusCursoEnum.Cancelado">Cancelado</option>
+                                </select>
+                                <span class="text-danger">@Html.ValidationMessageFor(x => x.Curso.Status)</span>
+                            </div>
+
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-12 mb-3">
+                                <label for="MaxAlunos" class="form-label">Quantidade Máxima de Alunos</label>
+                                <input type="number" class="form-control" asp-for="@Model.Curso.MaxAlunos" min="10" max="30" required />
+                                <span class="text-danger">@Html.ValidationMessageFor(x => x.Curso.MaxAlunos)</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mb-1" id="btnSalvarCurso">Salvar Alterações</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Exibiçao de lista - Alunos matriculados no curso -->
+    <div class="card shadow mb-4 mt-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Alunos Matriculados no Curso</h6>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered text-center"  width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Nascimento</th>
+                            <th>Gênero</th>
+                            <th>Status</th>
+                            <th>Cadastro</th>
+                            <th>Cursos</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.AlunosDoCurso != null && Model.AlunosDoCurso.Any())
+                        {
+                            foreach (var aluno in Model.AlunosDoCurso)
+                            {
+                                <tr>
+                                    <td><a class="font-weight-bold" asp-route-Id="@aluno.AlunoId" asp-controller="Aluno" asp-action="DetalhesAluno">@aluno.Nome</a></td>
+                                    <td>@aluno.DataNascimento.ToString("dd/MM/yyyy")</td>
+                                    <td>@aluno.Genero</td>
+                                    <td>@aluno.Status</td>
+                                    <td>@aluno.DataCadastro.ToString("dd/MM/yyyy")</td>
+                                    <td>@aluno.QuantidadeCursos</td>
+                                    <td>
+                                        <!-- Botão para remover aluno do curso -->
+                                        <button class="btn-sm btn-danger btn-aluno-acao"
+                                                data-aluno-id="@aluno.AlunoId"
+                                                data-curso-id="@Model.Curso.CursoId"
+                                                data-tipo="remover">
+                                            Remover Aluno do Curso
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center">Nenhum aluno matriculado no curso.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exibiçao de lista - Alunos não matriculados no curso -->
+    <div class="card shadow mb-4 mt-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Alunos Não Matriculados no Curso</h6>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered text-center dataTable" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Nascimento</th>
+                            <th>Gênero</th>
+                            <th>Status</th>
+                            <th>Cadastro</th>
+                            <th>Cursos</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.AlunosNaoInscritosNoCurso != null && Model.AlunosNaoInscritosNoCurso.Any() == true)
+                        {
+                            foreach (var aluno in Model.AlunosNaoInscritosNoCurso)
+                            {
+                                <tr>
+                                    <td><a class="font-weight-bold" asp-route-Id="@aluno.AlunoId" asp-controller="Aluno" asp-action="DetalhesAluno">@aluno.Nome</a></td>
+                                    <td>@aluno.DataNascimento.ToString("dd/MM/yyyy")</td>
+                                    <td>@aluno.Genero</td>
+                                    <td>@aluno.Status</td>
+                                    <td>@aluno.DataCadastro.ToString("dd/MM/yyyy")</td>
+                                    <td>@aluno.QuantidadeCursos</td>
+                                    <td class="text-center">
+                                        <!-- Adicionar o aluno ao curso -->
+                                        <button class="btn-sm btn-primary btn-aluno-acao"
+                                                data-aluno-id="@aluno.AlunoId"
+                                                data-curso-id="@Model.Curso.CursoId"
+                                                data-tipo="adicionar">
+                                            Adicionar Aluno
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center">Nenhum aluno encontrado.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Adicionar Professor -->
+<div class="modal fade" id="modalAddProfessor" tabindex="-1" aria-labelledby="modalAddProfessorLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAddProfessorLabel">Adicionar Professor ao Curso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formAdicionarProfessor" asp-controller="ProfessorCurso" asp-action="AddProfessorAoCurso" method="post">
+                    <input type="hidden" id="cursoIdInput" name="CursoId" />
+
+                    <div class="mb-4">
+                        <label for="ProfessorId" class="form-label">Selecione um professor:</label>
+                        <select class="form-control" name="ProfessorId" id="ProfessorId" required>
+                            <option value="" selected>Selecione</option>
+                            @if (Model.Professores != null && Model.Professores.Any())
+                            {
+                                foreach (var professor in Model.Professores)
+                                {
+                                    <option value="@professor.ProfessorId">@professor.Nome</option>
+                                }
+                            }
+                            else
+                            {
+                                <option value="">Nenhum professor encontrado</option>
+                            }
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mb-1">Adicionar Professor</button>
+                </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/add-professor-curso-modal.js"></script>
+    <script src="~/js/aluno-curso.js"></script>
+}

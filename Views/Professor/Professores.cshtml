@@ -1,0 +1,207 @@
+﻿@model ProfessorViewModel
+
+@{
+    ViewData["Title"] = "Professores";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex align-items-center">
+        <h1 class="mt-4">Professores</h1>
+        <h6 class="mt-5 me-4 ms-auto fw-bold">Total de Professores: @Model.Professores.Count</h6>
+    </div>
+
+    <div class="card shadow mb-4 mt-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Lista Geral de Professores</h6>
+            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAddProfessor">
+                <i class="bi bi-person"> Adicionar Professor</i>
+            </button>
+        </div>
+        <!-- Lista de Professores -->
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Gênero</th>
+                            <th>Email</th>
+                            <th>Nascimento</th>
+                            <th>Cadastro</th>
+                            <th>Status</th>
+                            <th>Cursos</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (Model.Professores != null && Model.Professores.Any())
+                        {
+                            foreach (var professor in Model.Professores)
+                            {
+                                <tr>
+                                    <td>
+                                        <a class="fw-bold" asp-route-Id="@professor.ProfessorId" asp-controller="Professor" asp-action="DetalhesProfessor">@professor.Nome</a>
+                                    </td>
+                                    <td>@professor.Genero</td>
+                                    <td>@professor.Email</td>
+                                    <td>@professor.DataNascimento.ToString("dd/MM/yyyy")</td>
+                                    <td>@professor.DataCadastro.ToString("dd/MM/yyyy")</td>
+                                    <td>@professor.Status</td>
+                                    <td>@professor.QuantidadeCursos</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-primary btn-sm text-decoration-none"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalAtualizarProfessor"
+                                                data-professor-id="@professor.ProfessorId"
+                                                data-nome="@professor.Nome"
+                                                data-email="@professor.Email"
+                                                data-genero="@professor.Genero"
+                                                data-data-nascimento="@professor.DataNascimento.ToString("yyyy-MM-dd")"
+                                                data-status="@professor.Status">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm text-decoration-none" data-bs-toggle="modal"
+                                                data-bs-target="#modalRemocao"
+                                                data-id="@professor.ProfessorId"
+                                                data-nome="@professor.Nome"
+                                                data-tipo="professor">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center">Nenhum professor encontrado.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Adicionar Professor -->
+<div class="modal fade" id="modalAddProfessor" tabindex="-1" aria-labelledby="modalAddProfessorLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAddProfessorLabel">Adicionar Professor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-controller="Professor" asp-action="AddProfessor" asp-antiforgery="true" method="post">
+                    <!-- Nome -->
+                    <div class="mb-3">
+                        <label for="Nome" class="form-label">Nome</label>
+                        <input type="text" class="form-control" asp-for="@Model.Professor.Nome" maxlength="30" required>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label for="Email" class="form-label">Email</label>
+                        <input type="email" class="form-control" asp-for="@Model.Professor.Email" maxlength="100" required>
+                    </div>
+
+                    <!-- Data de Nascimento -->
+                    <div class="mb-3">
+                        <label for="DataNascimento" class="form-label">Data de Nascimento</label>
+                        <input type="date" class="form-control" asp-for="@Model.Professor.DataNascimento" min="1940-01-01" max="2010-12-31" required>
+                    </div>
+
+                    <!-- Gênero -->
+                    <div class="mb-3">
+                        <label for="Genero" class="form-label">Gênero</label>
+                        <select class="form-control" asp-for="@Model.Professor.Genero" required>
+                            <option value="" selected>Selecione</option>
+                            <option value="@GeneroEnum.Feminino">Feminino</option>
+                            <option value="@GeneroEnum.Masculino">Masculino</option>
+                            <option value="@GeneroEnum.Outro">Outro</option>
+                        </select>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="mb-3">
+                        <label for="Status" class="form-label">Status</label>
+                        <select class="form-control" asp-for="@Model.Professor.Status" required>
+                            <option value="@StatusEnum.Ativo">@StatusEnum.Ativo</option>
+                            <option value="@StatusEnum.Inativo">@StatusEnum.Inativo</option>
+                        </select>
+                    </div>
+
+                    <!-- Botão -->
+                    <button type="submit" class="btn btn-primary w-100 mb-1">Adicionar Professor</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Atualizar Professor -->
+<div class="modal fade" id="modalAtualizarProfessor" tabindex="-1" aria-labelledby="modalAtualizarProfessor" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAtualizarProfessorLabel">Editar Professor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-controller="Professor" asp-action="AtualizarProfessor" asp-antiforgery="true" method="post">
+                    <!-- ID -->
+                    <input type="hidden" name="ProfessorId" id="ProfessorId" />
+
+                    <!-- Nome -->
+                    <div class="mb-3">
+                        <label for="Nome" class="form-label">Nome</label>
+                        <input type="text" class="form-control" name="Nome" id="Nome" maxlength="30" required>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label for="Email" class="form-label">Email</label>
+                        <input type="email" class="form-control" name="Email" id="Email" maxlength="100" required>
+                    </div>
+
+                    <!-- Data de Nascimento -->
+                    <div class="mb-3">
+                        <label for="DataNascimento" class="form-label">Data de Nascimento</label>
+                        <input type="date" class="form-control" id="DataNascimento" name="DataNascimento" min="1940-01-01" max="2010-12-31" required>
+                    </div>
+
+                    <!-- Gênero -->
+                    <div class="mb-3">
+                        <label for="Genero" class="form-label">Gênero</label>
+                        <select class="form-control" name="Genero" id="Genero" required>
+                            <option value="@GeneroEnum.Feminino">@GeneroEnum.Feminino</option>
+                            <option value="@GeneroEnum.Masculino">@GeneroEnum.Masculino</option>
+                            <option value="@GeneroEnum.Outro">@GeneroEnum.Outro</option>
+                        </select>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="mb-3">
+                        <label for="Status" class="form-label">Status</label>
+                        <select class="form-control" name="Status" id="Status" required>
+                            <option value="@StatusEnum.Ativo">@StatusEnum.Ativo</option>
+                            <option value="@StatusEnum.Inativo">@StatusEnum.Inativo</option>
+                        </select>
+                        <small class="text-danger">
+                            <strong>Atenção:</strong> Se o status do professor for atualizado para inativo, ele será removido de todos os cursos.
+                        </small>
+                    </div>
+
+                    <!-- Botões -->
+                    <button type="submit" class="btn btn-primary w-100 mb-1">Salvar Alterações</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/editar-professor-modal.js" defer></script>
+}

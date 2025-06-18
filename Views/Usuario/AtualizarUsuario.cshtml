@@ -1,0 +1,102 @@
+﻿@model UsuarioSemSenhaModel
+
+@{
+    ViewData["Title"] = "Editar Dados";
+}
+
+<div class="container-fluid px-">
+    <!-- Breadcrumb para navegação -->
+    <ol class="breadcrumb mt-1 bg-transparent">
+        <li class="breadcrumb-item">
+            <!-- Link para a página de visão geral -->
+            <a asp-controller="Home" asp-action="Index" class="text-decoration-none">Visão Geral</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Editar Dados</li>
+    </ol>
+
+    <div class="card shadow-lg p-4 w-100">
+        <!-- Título principal da página -->
+        <h2 class="mb-1 text-center">Editar Dados</h2>
+
+        <!-- Botões para excluir conta e alterar senha -->
+        <div class="text-end">
+            <button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
+                    data-bs-target="#modalRemocao"
+                    data-id="@Model.Id"
+                    data-nome="@Model.Nome"
+                    data-tipo="usuario">
+                <i class="bi bi-person-x"></i> Excluir Conta
+            </button>
+            <a class="btn btn-outline-primary btn-sm" asp-controller="Usuario" asp-action="AlterarSenha" asp-route-id="@Model.Id">
+                <i class="bi bi-key"></i> Alterar Senha
+            </a>
+        </div>
+
+        <!-- Formulário para editar os dados do usuário -->
+        <form asp-controller="Usuario" asp-action="AtualizarUsuario" asp-antiforgery="true" method="post">
+            <!-- Campo oculto para armazenar o ID do usuário -->
+            <input type="hidden" asp-for="Id" value="@Model.Id" />
+
+            <!-- Campo para o nome do usuário -->
+            <div class="mb-1">
+                <label for="Nome" class="form-label">Nome</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input type="text" class="form-control" asp-for="Nome" placeholder="Nome" maxlength="30" required>
+                </div>
+                <!-- Mensagem de erro para o nome -->
+                <span class="text-danger small">@Html.ValidationMessageFor(x => x.Nome)</span>
+            </div>
+
+            <!-- Campo para o e-mail do usuário -->
+            <div class="mb-3">
+                <label for="Email" class="form-label">Email</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                    <input type="email" class="form-control" asp-for="Email" maxlength="100" placeholder="Digite seu email" />
+                </div>
+                <!-- Mensagem de erro para o e-mail -->
+                <span class="text-danger small">@Html.ValidationMessageFor(x => x.Email)</span>
+            </div>
+
+            <!-- Campo para o gênero do usuário -->
+            <div class="mb-3">
+                <label for="Genero" class="form-label">Gênero</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-gender-ambiguous"></i></span>
+                    <select class="form-control" asp-for="Genero" required>
+                        <option value="">Selecione o Gênero</option>
+                        <option value="@GeneroEnum.Feminino">Feminino</option>
+                        <option value="@GeneroEnum.Masculino">Masculino</option>
+                        <option value="@GeneroEnum.Outro">Outro</option>
+                    </select>
+                </div>
+                <!-- Mensagem de erro para o gênero -->
+                <span class="text-danger small">@Html.ValidationMessageFor(x => x.Genero)</span>
+            </div>
+
+            <!-- Campo para a data de nascimento do usuário -->
+            <div class="mb-3">
+                <label for="DataNascimento" class="form-label">Data de Nascimento</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                    <input type="date" class="form-control" asp-for="DataNascimento" placeholder="Data de Nascimento" min="1940-01-01" max="2010-12-31" required>
+                </div>
+                <!-- Mensagem de erro para a data de nascimento -->
+                <span class="text-danger small">@Html.ValidationMessageFor(x => x.DataNascimento)</span>
+            </div>
+
+            <!-- Botão para salvar as alterações -->
+            <button type="submit" class="btn btn-primary w-100 mt-3">
+                <i class="bi bi-save"></i> Salvar Alterações
+            </button>
+        </form>
+
+        <!-- Link para voltar à página inicial -->
+        <div class="text-center mt-3">
+            <a asp-controller="Home" asp-action="Index" class="text-decoration-none text-secondary">
+                <i class="bi bi-arrow-left"></i> Página Inicial
+            </a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,89 @@
+﻿@model List<string>
+
+<!-- Sidebar - Brand -->
+<!-- Link para a página inicial, com ícone e texto do nome da marca "Master Idiomas" -->
+<a class="sidebar-brand d-flex align-items-center justify-content-center" asp-controller="Home" asp-action="Index">
+    <div class="sidebar-brand-icon rotate-n-15">
+        <i class="fas fa-globe-americas icon-lg"></i> <!-- Ícone do globo -->
+    </div>
+    <div class="sidebar-brand-text mx-1">Master Idiomas</div> <!-- Nome da marca -->
+</a>
+
+<!-- Divider -->
+<!-- Linha divisória para separar seções da barra lateral -->
+<hr class="sidebar-divider my-0">
+
+<!-- Nav Item - Dashboard -->
+<!-- Item de navegação para a visão geral, está marcado como "ativo" -->
+<li class="nav-item active">
+    <a class="nav-link" asp-controller="Home" asp-action="Index">
+        <i class="fas fa-fw fas fa-graduation-cap"></i> <!-- Ícone de graduação -->
+        <span>Visão Geral</span> <!-- Texto para o item -->
+    </a>
+</li>
+
+<!-- Divider -->
+<!-- Linha divisória para separar os itens de navegação -->
+<hr class="sidebar-divider">
+
+<!-- Nav Item - Cursos -->
+<!-- Este item tem um submenu que é colapsável, exibindo a lista de idiomas -->
+<li class="nav-item">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
+       aria-expanded="true" aria-controls="collapsePages">
+        <i class="fas fa-fw fa-globe"></i> <!-- Ícone de globo -->
+        <span>Cursos</span> <!-- Texto do item -->
+    </a>
+
+    <!-- Submenu de Idiomas - Lista de cursos por idioma -->
+    <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+        <div class="py-2 collapse-inner rounded bg-primary">
+            <!-- Loop através dos idiomas disponíveis no modelo (passados como parâmetro na view) -->
+            @foreach (var idioma in Model)
+            {
+                <a class="nav-link" asp-controller="Curso" asp-action="Idioma" asp-route-idioma="@idioma">
+                    <span>@idioma</span> <!-- Exibe o nome do idioma -->
+                </a>
+            }
+        </div>
+    </div>
+</li>
+
+<!-- Divider -->
+<!-- Linha divisória para separar as seções do gerenciamento de dados -->
+<hr class="sidebar-divider">
+
+<!-- Heading -->
+<!-- Título para a seção de gerenciamento de dados -->
+<div class="sidebar-heading">Gerenciamento de Dados</div>
+
+<!-- Nav Items - Seção de gerenciamento de dados -->
+<!-- Itens de navegação para gerenciar alunos, cursos e professores -->
+<li class="nav-item">
+    <a class="nav-link" asp-controller="Aluno" asp-action="Alunos">
+        <i class="fas fa-fw fa-user-graduate"></i> <!-- Ícone de aluno -->
+        <span>Alunos</span> <!-- Texto do item -->
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" asp-controller="Curso" asp-action="Cursos">
+        <i class="fas fa-fw fa-book-open"></i> <!-- Ícone de livro -->
+        <span>Cursos</span> <!-- Texto do item -->
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" asp-controller="Professor" asp-action="Professores">
+        <i class="fas fa-fw fa-chalkboard-teacher"></i> <!-- Ícone de professor -->
+        <span>Professores</span> <!-- Texto do item -->
+    </a>
+</li>
+
+<!-- Divider -->
+<!-- Linha divisória final -->
+<hr class="sidebar-divider d-none d-md-block">
+
+<!-- Sidebar Toggler (Sidebar) -->
+<!-- Botão para alternar a visibilidade da barra lateral em dispositivos maiores -->
+<div class="text-center d-none d-md-inline">
+    <button class="rounded-circle border-0" id="sidebarToggle"></button>
+</div>

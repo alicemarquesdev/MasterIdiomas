@@ -1,0 +1,87 @@
+﻿@model AlterarSenhaModel
+@{
+    ViewData["Title"] = "Alterar Senha";
+}
+
+<div class="container px-4">
+    <!-- Breadcrumb de navegação -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mt-3 bg-light p-2 rounded">
+            <li class="breadcrumb-item">
+                <!-- Link para a página de visão geral -->
+                <a asp-controller="Home" asp-action="Index" class="text-decoration-none text-primary">Visão Geral</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Alterar Senha</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm p-4 mx-auto">
+        <!-- Título da página -->
+        <h2 class="mb-3 text-center">Alterar Senha</h2>
+
+        <!-- Formulário para alteração de senha -->
+        <form asp-controller="Usuario" asp-action="AlterarSenha" asp-antiforgery="true" method="post">
+            <!-- Campo oculto para armazenar o ID do usuário -->
+            <input type="hidden" asp-for="Id" value="0" />
+
+            <!-- Campo para inserir a senha atual -->
+            <div class="mb-3">
+                <label for="SenhaAtual" class="form-label">Senha Atual</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-key"></i></span>
+                    <input class="form-control" type="password" asp-for="SenhaAtual" placeholder="Digite sua senha atual" />
+                </div>
+                <!-- Mensagem de erro para a senha atual -->
+                <span class="text-danger small">@Html.ValidationMessageFor(x => x.SenhaAtual)</span>
+            </div>
+
+            <div class="row">
+                <!-- Campo para inserir a nova senha -->
+                <div class="col-md-6 mb-1">
+                    <label for="NovaSenha" class="form-label">Nova Senha</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input class="form-control" type="password" asp-for="NovaSenha" placeholder="Nova senha" />
+                    </div>
+                    <!-- Mensagem de erro para a nova senha -->
+                    <span class="text-danger small">@Html.ValidationMessageFor(x => x.NovaSenha)</span>
+                </div>
+
+                <!-- Campo para confirmar a nova senha -->
+                <div class="col-md-6 mb-1">
+                    <label for="ConfirmarNovaSenha" class="form-label">Confirmar Nova Senha</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-check-circle"></i></span>
+                        <input class="form-control" type="password" asp-for="ConfirmarNovaSenha" placeholder="Confirme a senha" />
+                    </div>
+                    <!-- Mensagem de erro para a confirmação da nova senha -->
+                    <span class="text-danger small">@Html.ValidationMessageFor(x => x.ConfirmarNovaSenha)</span>
+                </div>
+            </div>
+
+            <!-- Instruções de requisitos para a senha -->
+            <small class="form-text text-muted">
+                A senha deve conter:
+                <ul class="mb-0 ps-3">
+                    <li>Min. 8 caracteres</li>
+                    <li>1 letra maiúscula</li>
+                    <li>1 letra minúscula</li>
+                    <li>1 número</li>
+                    <li>1 caractere especial (@@, $, !, etc.)</li>
+                </ul>
+            </small>
+
+            <!-- Botão de submissão para alterar a senha -->
+            <button type="submit" class="btn btn-primary w-100 mt-3">
+                Alterar Senha
+            </button>
+
+            <!-- Link para voltar à página inicial -->
+            <div class="text-center mt-3">
+                <a asp-controller="Home" asp-action="Index" class="text-decoration-none text-secondary">
+                    <i class="bi bi-arrow-left"></i> Página Inicial
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

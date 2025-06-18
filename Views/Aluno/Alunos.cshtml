@@ -1,0 +1,188 @@
+﻿@model AlunoViewModel
+
+@{
+    ViewData["Title"] = "Alunos";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex align-items-center justify-content-between">
+        <h1 class="mt-4">Alunos</h1>
+        <!-- Exibe o total de alunos -->
+        <h6 class="mt-5 fw-bold">Total de Alunos: @Model.Alunos.Count</h6>
+    </div>
+
+    <div class="card shadow mb-4 mt-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 fw-bold text-primary">Lista Geral de Alunos</h6>
+            <!-- Botão para abrir o modal de adicionar aluno -->
+            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAdicionarAluno">
+                <i class="bi bi-person"> Adicionar Aluno</i>
+            </button>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Nascimento</th>
+                            <th>Gênero</th>
+                            <th>Status</th>
+                            <th>Cadastro</th>
+                            <th>Cursos</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Alunos != null && Model.Alunos.Any())
+                        {
+                            @foreach (var aluno in Model.Alunos)
+                            {
+                                <tr>
+                                    <!-- Nome do aluno que ao clicar leva para os detalhes -->
+                                    <td><a class="font-weight-bold" asp-route-id="@aluno.AlunoId" asp-controller="Aluno" asp-action="DetalhesAluno">@aluno.Nome</a></td>
+                                    <td>@aluno.DataNascimento.ToString("dd/MM/yyyy")</td>
+                                    <td>@aluno.Genero</td>
+                                    <td>@aluno.Status</td>
+                                    <td>@aluno.DataCadastro.ToString("dd/MM/yyyy")</td>
+                                    <td>@aluno.QuantidadeCursos</td>
+                                    <td class="text-center">
+                                        <!-- Botões de ação para editar e excluir aluno -->
+                                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditarAluno"
+                                                data-aluno-id="@aluno.AlunoId" data-nome="@aluno.Nome"
+                                                data-data-nascimento="@aluno.DataNascimento.ToString("yyyy-MM-dd")" data-genero="@aluno.Genero"
+                                                data-status="@aluno.Status">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalRemocao"
+                                                data-id="@aluno.AlunoId" data-nome="@aluno.Nome" data-tipo="aluno">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <!-- Mensagem quando não há alunos cadastrados -->
+                                <td colspan="6" class="text-center">Nenhum aluno encontrado.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Adicionar Aluno -->
+<div class="modal fade" id="modalAdicionarAluno" tabindex="-1" aria-labelledby="modalAdicionarAlunoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAdicionarAlunoLabel">Adicionar Aluno</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-controller="Aluno" asp-action="AddAluno" asp-antiforgery="true" method="post">
+                <div class="modal-body">
+                    <!-- Formulário de Adição de Aluno -->
+                    <!-- Campo Nome -->
+                    <div class="mb-3">
+                        <label for="Nome" class="form-label">Nome</label>
+                        <input type="text" class="form-control" asp-for="@Model.Aluno.Nome" maxlength="30" placeholder="Digite o nome do aluno" required />
+                        <span class="text-danger">@Html.ValidationMessageFor(x => x.Aluno.Nome)</span>
+                    </div>
+
+                    <!-- Campo Data de Nascimento -->
+                    <div class="mb-3">
+                        <label for="DataNascimento" class="form-label">Data de Nascimento</label>
+                        <input type="date" class="form-control" asp-for="@Model.Aluno.DataNascimento" min="1950-01-01" max="2015-12-31" required>
+                        <span class="text-danger">@Html.ValidationMessageFor(x => x.Aluno.DataNascimento)</span>
+                    </div>
+
+                    <!-- Campo Gênero -->
+                    <div class="mb-3">
+                        <label for="Genero" class="form-label">Gênero</label>
+                        <select class="form-control" asp-for="@Model.Aluno.Genero" required>
+                            <option value="" selected>Selecione</option>
+                            <option value="@GeneroEnum.Feminino">Feminino</option>
+                            <option value="@GeneroEnum.Masculino">Masculino</option>
+                            <option value="@GeneroEnum.Outro">Outro</option>
+                        </select>
+                        <span class="text-danger">@Html.ValidationMessageFor(x => x.Aluno.Genero)</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="submit" class="btn btn-primary">Adicionar Aluno</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Editar Aluno -->
+<div class="modal fade" id="modalEditarAluno" tabindex="-1" aria-labelledby="modalEditarAlunoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEditarAlunoLabel">Editar Aluno</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-controller="Aluno" asp-action="AtualizarAluno" asp-antiforgery="true" method="post">
+                <div class="modal-body">
+                    <!-- Formulário de Edição de Aluno -->
+                    <!-- Campo Hidden para AlunoId -->
+                    <input type="hidden" id="AlunoId" name="AlunoId" />
+
+                    <!-- Campo Nome -->
+                    <div class="mb-3">
+                        <label for="Nome" class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="Nome" name="Nome" maxlength="30" required />
+                        <span class="text-danger" id="NomeError"></span>
+                    </div>
+
+                    <!-- Campo Data de Nascimento -->
+                    <div class="mb-3">
+                        <label for="DataNascimento" class="form-label">Data de Nascimento</label>
+                        <input type="date" class="form-control" id="DataNascimento" name="DataNascimento" min="1950-01-01" max="2015-12-31" required />
+                        <span class="text-danger" id="DataNascimentoError"></span>
+                    </div>
+
+                    <!-- Campo Gênero -->
+                    <div class="mb-3">
+                        <label for="Genero" class="form-label">Gênero</label>
+                        <select class="form-control" id="Genero" name="Genero" required>
+                            <option value="" selected>Selecione</option>
+                            <option value="@GeneroEnum.Feminino">Feminino</option>
+                            <option value="@GeneroEnum.Masculino">Masculino</option>
+                            <option value="@GeneroEnum.Outro">Outro</option>
+                        </select>
+                        <span class="text-danger" id="GeneroError"></span>
+                    </div>
+
+                    <!-- Campo Status -->
+                    <div class="mb-3">
+                        <label for="Status" class="form-label">Status</label>
+                        <select class="form-control" id="Status" name="Status" required>
+                            <option value="@StatusEnum.Ativo">Ativo</option>
+                            <option value="@StatusEnum.Inativo">Inativo</option>
+                        </select>
+                        <span class="text-danger" id="StatusError"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="submit" class="btn btn-primary">Salvar alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Script para gerenciar interações do Modal de Edição -->
+    <script src="~/js/editar-aluno-modal.js"></script>
+}

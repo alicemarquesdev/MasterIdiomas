@@ -1,0 +1,239 @@
+﻿@model AlunoViewModel
+
+@{
+    ViewData["Title"] = "Aluno - Detalhes"; // Define o título da página.
+}
+
+<div class="container-fluid px-4">
+    <ol class="breadcrumb mt-1 bg-transparent">
+        <li class="breadcrumb-item">
+            <!-- Link para a página de lista de alunos -->
+            <a asp-controller="Aluno" asp-action="Alunos" class="text-decoration-none">Alunos</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            <!-- Exibe o nome do aluno na barra de navegação -->
+            Aluno - @Model.Aluno.Nome
+        </li>
+    </ol>
+
+    <h1 class="mt-2 mb-4">Aluno - @Model.Aluno.Nome</h1>
+
+    <!-- Card com as informações do aluno -->
+    <div class="card shadow p-4 mb-4 position-relative">
+        <div class="d-flex">
+            <h5 class="card-title text-primary">Informações do Aluno</h5>
+            <div class="ms-auto">
+                <!-- Botões para editar e excluir aluno -->
+                <button class="btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editarModal">
+                    <i class="bi bi-pencil"></i>
+                </button>
+
+                <button class="btn-danger btn-sm text-decoration-none" data-bs-toggle="modal"
+                        data-bs-target="#modalRemocao"
+                        data-id="@Model.Aluno.AlunoId"
+                        data-nome="@Model.Aluno.Nome"
+                        data-tipo="aluno">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <p><strong>Nome:</strong> @Model.Aluno.Nome</p>
+                <p><strong>Gênero:</strong> @Model.Aluno.Genero</p>
+                <p><strong>Data de Nascimento:</strong> @Model.Aluno.DataNascimento.ToString("dd/MM/yyyy")</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Status:</strong> @Model.Aluno.Status</p>
+                <p><strong>Data de Matrícula:</strong> @Model.Aluno.DataCadastro.ToString("dd/MM/yyyy")</p>
+                <p><strong>Cursos Matriculados:</strong> @Model.Aluno.QuantidadeCursos</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Editar Aluno -->
+    <div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editarModalLabel">Editar Aluno - @Model.Aluno.Nome</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <!-- Formulário para editar aluno -->
+                <form asp-controller="Aluno" asp-action="AtualizarAluno" asp-antiforgery="true" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" asp-for="Aluno.AlunoId" /> <!-- Campo oculto para ID do aluno -->
+                        <!-- Campo para editar o nome do aluno -->
+                        <div class="mb-3">
+                            <label for="Nome" class="form-label">Nome</label>
+                            <input type="text" class="form-control" asp-for="Aluno.Nome" maxlength="30" required />
+                            <span class="text-danger">@Html.ValidationMessageFor(x => x.Aluno.Nome)</span>
+                        </div>
+
+                        <!-- Campo para editar a data de nascimento -->
+                        <div class="mb-3">
+                            <label for="DataNascimento" class="form-label">Data de Nascimento</label>
+                            <input type="date" class="form-control" asp-for="Aluno.DataNascimento" min="1950-01-01" max="2015-12-31" required />
+                            <span class="text-danger">@Html.ValidationMessageFor(x => x.Aluno.DataNascimento)</span>
+                        </div>
+
+                        <!-- Campo para editar o gênero do aluno -->
+                        <div class="mb-3">
+                            <label for="Genero" class="form-label">Gênero</label>
+                            <select class="form-control" asp-for="Aluno.Genero" required>
+                                <option value="" selected>Selecione</option>
+                                <option value="@GeneroEnum.Feminino">@GeneroEnum.Feminino</option>
+                                <option value="@GeneroEnum.Masculino">@GeneroEnum.Masculino</option>
+                                <option value="@GeneroEnum.Outro">@GeneroEnum.Outro</option>
+                            </select>
+                            <span class="text-danger">@Html.ValidationMessageFor(x => x.Aluno.Genero)</span>
+                        </div>
+
+                        <!-- Campo para editar o status do aluno -->
+                        <div class="mb-3">
+                            <label for="Status" class="form-label">Status</label>
+                            <select class="form-control" asp-for="Aluno.Status" required>
+                                <option value="@StatusEnum.Ativo">@StatusEnum.Ativo</option>
+                                <option value="@StatusEnum.Inativo">@StatusEnum.Inativo</option>
+                            </select>
+                            <span class="text-danger">@Html.ValidationMessageFor(x => x.Aluno.Status)</span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="submit" class="btn btn-primary">Salvar alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cursos do Aluno -->
+    <div class="card shadow mb-4 mt-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Cursos do Aluno - @Model.Aluno.Nome</h6>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered text-center" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Idioma</th>
+                            <th>Início</th>
+                            <th>Turno</th>
+                            <th>Nível</th>
+                            <th>Professor</th>
+                            <th>Carga Horária</th>
+                            <th>Status</th>
+                            <th>Alunos</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!-- Verifica se há cursos matriculados e exibe-os -->
+                        @if (Model.CursosDoAluno != null && Model.CursosDoAluno.Any())
+                        {
+                            @foreach (var curso in Model.CursosDoAluno)
+                            {
+                                <tr>
+                                    <td><a class="fw-bold" asp-route-id="@curso.CursoId" asp-controller="Curso" asp-action="DetalhesCurso">@curso.Idioma</a></td>
+                                    <td>@curso.DataInicio.ToString("dd/MM/yyyy")</td>
+                                    <td>@curso.Turno</td>
+                                    <td>@curso.Nivel</td>
+                                    <td>@(curso.Professor != null ? curso.Professor.Nome : "-")</td>
+                                    <td>@curso.CargaHoraria </td>
+                                    <td>@curso.Status</td>
+                                    <td>@curso.QuantidadeAlunos</td>
+                                    <td>
+                                        <!-- Botão para remover aluno do curso -->
+                                        <button class="btn-sm btn-danger btn-aluno-acao"
+                                                data-aluno-id="@Model.Aluno.AlunoId"
+                                                data-curso-id="@curso.CursoId"
+                                                data-tipo="remover">
+                                            Desmatricular
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center">Este aluno não está matriculado em nenhum curso.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cursos Disponíveis para o Aluno -->
+    <div class="card shadow mb-4 mt-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Lista de Cursos Disponíveis</h6>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Idioma</th>
+                            <th>Início</th>
+                            <th>Turno</th>
+                            <th>Nível</th>
+                            <th>Professor</th>
+                            <th>Carga Horária</th>
+                            <th>Status</th>
+                            <th>Alunos</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!-- Verifica se há cursos disponíveis e exibe-os -->
+                        @if (Model.CursosDisponiveisParaOAluno != null && Model.CursosDisponiveisParaOAluno.Any())
+                        {
+                            @foreach (var curso in Model.CursosDisponiveisParaOAluno)
+                            {
+                                <tr>
+                                    <td><a class="fw-bold" asp-route-id="@curso.CursoId" asp-controller="Curso" asp-action="DetalhesCurso">@curso.Idioma</a></td>
+                                    <td>@curso.DataInicio.ToString("dd/MM/yyyy")</td>
+                                    <td>@curso.Turno</td>
+                                    <td>@curso.Nivel</td>
+                                    <td>@(curso.Professor != null ? curso.Professor.Nome : "-")</td>
+                                    <td>@curso.CargaHoraria</td>
+                                    <td>@curso.Status</td>
+                                    <td>@curso.QuantidadeAlunos</td>
+                                    <td>
+                                        <!-- Adicionar o aluno ao curso -->
+                                        <button class="btn-sm btn-primary btn-aluno-acao"
+                                                data-aluno-id="@Model.Aluno.AlunoId"
+                                                data-curso-id="@curso.CursoId"
+                                                data-tipo="adicionar">
+                                            Matricular
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center">Nenhum curso disponível para inscrição.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/aluno-curso.js"></script>
+}

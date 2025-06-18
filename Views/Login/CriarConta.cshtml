@@ -1,0 +1,97 @@
+﻿@model UsuarioModel
+@{
+    Layout = "_LayoutDeslogado";
+    ViewData["Title"] = "Criar Conta";
+}
+
+<!-- Criar conta do usuário -->
+<body class="bg-gradient-primary">
+    <div class="container">
+        <div class="card o-hidden border-0 shadow-lg my-5">
+            <div class="card-body p-0">
+                <div class="row">
+                    <div class="col-lg-5 d-none d-lg-block bg-login-image d-flex justify-content-center align-items-center">
+                        <img src="~/img/image-login.jpg" class="img-fluid" />
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="p-5">
+                            <div class="text-center">
+                                <h1 class="h4 text-gray-900 mb-4">Criar conta!</h1>
+                            </div>
+                            <!-- Formulário CriarConta -->
+                            <form class="user" asp-controller="Login" asp-action="CriarConta" asp-antiforgery="true" method="post" id="formUsuarioSenha">
+                                <!-- Nome -->
+                                <div class="form-group">
+                                    <input type="text" class="form-control form-control-user" asp-for="Nome" placeholder="Nome" maxlength="30" required>
+                                    <small class="text-danger">@Html.ValidationMessageFor(x => x.Nome)</small>
+                                </div>
+                                <!-- Email -->
+                                <div class="form-group">
+                                    <input type="email" class="form-control form-control-user" asp-for="Email" placeholder="Email" required>
+                                    <small class="text-danger">@Html.ValidationMessageFor(x => x.Email)</small>
+                                </div>
+
+                                <!-- Gênero e Data de Nascimento em uma linha (row) -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <!-- Campo Gênero -->
+                                        <div class="form-group pt-2">
+                                            <select class="form-control rounded" asp-for="Genero" required>
+                                                <option value="" selected>Selecione o Gênero</option>
+                                                <option value="@GeneroEnum.Feminino">Feminino</option>
+                                                <option value="@GeneroEnum.Masculino">Masculino</option>
+                                                <option value="@GeneroEnum.Outro">Outro</option>
+                                            </select>
+                                            <small class="text-danger">@Html.ValidationMessageFor(x => x.Genero)</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <!-- Campo Data de Nascimento -->
+                                        <div class="form-group">
+                                            <input type="date" class="form-control form-control-user" asp-for="DataNascimento" placeholder="Data de Nascimento"
+                                                   min="1940-01-01" max="2007-12-31" title="A data de nascimento deve estar entre 01/01/1940 e 31/12/2007." required/>
+
+                                            <small class="text-danger">@Html.ValidationMessageFor(x => x.DataNascimento)</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Senha e Confirmar Senha em uma linha (row) -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <!-- Campo Senha -->
+                                        <div class="form-group">
+                                            <input type="password" class="form-control form-control-user" asp-for="Senha" placeholder="Senha" id="Senha" required>
+                                            <small class="text-danger">@Html.ValidationMessageFor(x => x.Senha)</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <!-- Campo Confirmar Senha -->
+                                        <div class="form-group">
+                                            <input type="password" class="form-control form-control-user" placeholder="Confirmar Senha" id="ConfirmarSenha" required>
+                                            <small class="text-danger" id="confirmarSenhaError"></small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-user btn-block">Criar Conta</button>
+                            </form>
+                            <hr>
+                            <div class="text-center">
+                                <a class="small" asp-controller="Login" asp-action="RedefinirSenha">Esqueceu a senha?</a>
+                            </div>
+                            <div class="text-center">
+                                <a class="small" asp-controller="Login" asp-action="Login">Já tem uma conta? Faça login!</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+@section Scripts{
+    <script src="~/js/validacao-senha.js"></script>
+}

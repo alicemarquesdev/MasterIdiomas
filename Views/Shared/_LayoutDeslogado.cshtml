@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+
+<!-- Layout de início, utilizado para realizar login, criar usuário e redefinir senha -->
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>MasterIdiomas</title>
+
+    <!-- Custom fonts for this template -->
+    <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <main class="pb-3">
+
+        @{
+            var mensagem = TempData["MensagemSucesso"] ?? TempData["MensagemErro"];
+            var classe = TempData["MensagemSucesso"] != null ? "alert-primary" : "alert-danger";
+        }
+
+        @if (mensagem != null)
+        {
+            <div class="container alert @classe alert-dismissible fade show d-flex align-items-center" role="alert">
+                <div>@mensagem</div>
+                <button type="button" class="btn-close btn-close-dark close-alert ms-auto p-3" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @RenderBody()
+    </main>
+
+    <!-- jQuery (se necessário para manipulação do DOM) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript -->
+    <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Scripts de validação do ASP.NET -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+
+    <!-- Custom scripts for all pages -->
+    <script src="~/js/sb-admin-2.min.js"></script>
+
+    <!-- Seção para scripts adicionais -->
+    @RenderSection("Scripts", required: false)
+
+
+</body>
+
+</html>

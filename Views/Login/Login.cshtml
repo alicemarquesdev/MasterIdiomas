@@ -1,0 +1,57 @@
+﻿@model LoginModel
+@{
+    Layout = "_LayoutDeslogado";
+    ViewData["Title"] = "Login";
+}
+
+<body class="bg-gradient-primary">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-10 col-lg-12 col-md-9">
+                <div class="card o-hidden border-0 shadow-lg my-5">
+                    <div class="card-body p-0">
+                        <div class="row">
+                            <div class="col-lg-6 d-none d-lg-block bg-login-image d-flex justify-content-center align-items-center">
+                                <!-- Imagem do lado esquerdo da tela de login -->
+                                <img src="~/img/image-login.jpg" class="img-fluid" />
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-5">
+                                    <div class="text-center">
+                                        <!-- Título da página -->
+                                        <h1 class="h4 text-gray-900 mb-4">Bem Vindo!</h1>
+                                    </div>
+                                    <!-- Formulário de Login -->
+                                    <form class="user" asp-controller="Login" asp-action="Entrar" asp-antiforgery="true" method="post">
+                                        <!-- Campo de Email -->
+                                        <div class="form-group">
+                                            <input type="email" asp-for="Email" class="form-control form-control-user" placeholder="Digite seu email">
+                                            <!-- Mensagem de erro de validação para o campo Email -->
+                                            <span class="text-danger">@Html.ValidationMessageFor(x => x.Email)</span>
+                                        </div>
+                                        <!-- Campo de Senha -->
+                                        <div class="form-group">
+                                            <input type="password" asp-for="Senha" class="form-control form-control-user" placeholder="Senha">
+                                            <!-- Mensagem de erro de validação para o campo Senha -->
+                                            <span class="text-danger">@Html.ValidationMessageFor(x => x.Senha)</span>
+                                        </div>
+                                        <!-- Botão de Envio do Formulário -->
+                                        <button type="submit" class="btn btn-primary btn-user btn-block">Login</button>
+                                    </form>
+                                    <hr>
+                                    <!-- Links para redefinir senha e criar conta -->
+                                    <div class="text-center">
+                                        <a class="small" asp-controller="Login" asp-action="RedefinirSenha">Esqueceu a senha?</a>
+                                    </div>
+                                    <div class="text-center">
+                                        <a class="small" asp-controller="Login" asp-action="CriarConta">Crie uma conta!</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
