@@ -35,9 +35,9 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <!-- Campo Gênero -->
-                                        <div class="form-group pt-2">
-                                            <select class="form-control rounded" asp-for="Genero" required>
-                                                <option value="" selected>Selecione o Gênero</option>
+                                        <div class="form-group pt-0">
+                                            <select class="form-control" placeholder="Gênero" asp-for="Genero" required style="border-radius: 10rem; height: 50px; padding: 0 1rem; font-size: 13px;">
+                                                <option value="">Gênero</option>
                                                 <option value="@GeneroEnum.Feminino">Feminino</option>
                                                 <option value="@GeneroEnum.Masculino">Masculino</option>
                                                 <option value="@GeneroEnum.Outro">Outro</option>
