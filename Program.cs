@@ -48,6 +48,7 @@ namespace MasterIdiomas
 
             // Configuração de Controllers e Views
             builder.Services.AddControllersWithViews();
+            
 
             builder.Services.AddAntiforgery(options => options.HeaderName = "RequestVerificationToken");
 
