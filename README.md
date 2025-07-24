@@ -2,6 +2,8 @@
 
 ![MasterIdiomas 2](assets/master-idiomas-2.png)
 
+👉 **[🔗 Ver projeto em produção](https://master-idiomas-fcandkafgfbyfnh7.brazilsouth-01.azurewebsites.net/)**
+
 Master Idiomas é um sistema de gerenciamento para escolas de idiomas, desenvolvido em ASP.NET Core MVC. 
 A plataforma permite o gerenciamento eficiente de cursos, professores, alunos e usuários, oferecendo 
 funcionalidades essenciais para a administração acadêmica e operacional.
